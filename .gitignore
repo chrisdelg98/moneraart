@@ -1,0 +1,132 @@
+# ─────────────────────────────────────────────────────────────────────
+#  SECRETS — never commit. Leaking any of these is the worst case.
+# ─────────────────────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+auth.json
+*.pem
+*.key
+*.p12
+*.pfx
+/storage/oauth-*.key
+
+# APP_KEY lives in .env and decrypts every customer email in the database.
+# BLIND_INDEX_KEY lives there too. Back both up in a password manager,
+# never in this repository. See implementation_plan.md §9.
+
+
+# ─────────────────────────────────────────────────────────────────────
+#  CUSTOMER DATA AND SELLABLE PRODUCT FILES
+#  The private disk holds the actual artwork being sold. Committing it
+#  would publish the product and bloat the repo permanently — git keeps
+#  deleted blobs in history.
+# ─────────────────────────────────────────────────────────────────────
+/storage/app/private/
+/storage/app/public/
+/storage/app/*
+!/storage/app/.gitignore
+!/storage/app/public/.gitkeep
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/testing/*
+/storage/framework/views/*
+/storage/logs/*
+!/storage/**/.gitkeep
+
+# Backups and database dumps
+/storage/backups/
+*.sql
+*.sql.gz
+*.dump
+*.sqlite
+*.sqlite-journal
+database/*.sqlite
+
+
+# ─────────────────────────────────────────────────────────────────────
+#  DEPENDENCIES AND BUILD OUTPUT
+# ─────────────────────────────────────────────────────────────────────
+/vendor/
+/node_modules/
+/public/build/
+/public/hot
+/public/storage
+/bootstrap/cache/*
+!/bootstrap/cache/.gitignore
+
+
+# ─────────────────────────────────────────────────────────────────────
+#  LOCAL SERVICES
+# ─────────────────────────────────────────────────────────────────────
+/meili_data/
+/data.ms/
+*.log
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+
+# ─────────────────────────────────────────────────────────────────────
+#  TOOLING CACHES
+# ─────────────────────────────────────────────────────────────────────
+.phpunit.result.cache
+.phpunit.cache/
+/.pest/
+.phpstan.cache/
+/.php-cs-fixer.cache
+/.pint.cache
+/coverage/
+/.nyc_output/
+
+
+# ─────────────────────────────────────────────────────────────────────
+#  EDITORS AND OS
+# ─────────────────────────────────────────────────────────────────────
+/.idea/
+/.vscode/
+/.fleet/
+/.nova/
+/.zed/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+
+# ─────────────────────────────────────────────────────────────────────
+#  SCRATCH
+# ─────────────────────────────────────────────────────────────────────
+/scratch/
+/tmp/
+*.tmp
+*.bak
+*.orig
+
+
+# ─────────────────────────────────────────────────────────────────────
+#  DOCUMENTATION — committed on purpose.
+#
+#  docs/ IS tracked. The planning documents are the most valuable thing
+#  in this repository right now, and their history is worth keeping.
+#
+#  This assumes a PRIVATE repository. Three things in docs/ should not be
+#  publicly discoverable:
+#
+#    · implementation_plan.md §24.4 — a written record of knowingly
+#      deferring tax compliance
+#    · the full security architecture: exact rate limits, admin path,
+#      download token design, anti-abuse thresholds
+#    · revenue figures, and the owner-only notes marked 📋 in the legal
+#      drafts explaining which clauses carry legal weight
+#
+#  IF THIS REPOSITORY EVER BECOMES PUBLIC, uncomment the lines below and
+#  move those files somewhere private first. Note that `git rm --cached`
+#  does not remove them from history — a file that was ever pushed public
+#  stays recoverable without rewriting history.
+# ─────────────────────────────────────────────────────────────────────
+# docs/implementation_plan.md
+# docs/legal_content.en.md
+# docs/legal_content.es.md
