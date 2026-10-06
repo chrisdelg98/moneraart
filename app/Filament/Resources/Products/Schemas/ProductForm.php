@@ -12,121 +12,218 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Tabs;
-use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 
 /**
- * Three tabs, and the first one alone is enough to publish.
+ * Two columns, the way WordPress lays out a post: the wide column is what you
+ * write, the narrow one is what you set.
  *
- * The administrator writes three things (title, subtitle, description), picks
- * three (style, room, theme) and drags two (artwork, files). Everything else —
- * slug, SEO title, meta description, alt text, ratio, orientation, colour — is
- * generated or computed. See §13.3.
+ * Everything needed to publish fits on one screen. Nothing is behind a tab,
+ * because a tab hides work rather than reducing it — and the sections that are
+ * rarely touched (sale window, SEO overrides) start collapsed instead.
+ *
+ * See §13.3.
  */
 class ProductForm
 {
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
-            Tabs::make()->columnSpanFull()->tabs([
-                self::productTab(),
-                self::filesTab(),
-                self::seoTab(),
+            // Filament's resource pages wrap the form in a two-column schema,
+            // so a grid that does not claim the full span silently renders at
+            // half the screen width.
+            Grid::make(4)->columnSpanFull()->schema([
+                Group::make()->columnSpan(['default' => 4, 'lg' => 3])->schema([
+                    self::contentSection(),
+                    self::pricingSection(),
+                    self::artworkSection(),
+                    self::filesSection(),
+                ]),
+
+                Group::make()->columnSpan(['default' => 4, 'lg' => 1])->schema([
+                    self::publishSection(),
+                    self::classificationSection(),
+                    self::seoSection(),
+                ]),
             ]),
         ]);
     }
 
-    private static function productTab(): Tab
+    // ── Main column ──────────────────────────────────────────────────────
+
+    private static function contentSection(): Section
     {
-        return Tab::make('Product')->schema([
-            Section::make()->columns(2)->schema([
+        return Section::make('Content')
+            ->description('Written for a person. The SEO text is generated from it.')
+            ->columns(2)
+            ->schema([
                 TextInput::make('title')
                     ->label('Title')
                     ->required()
                     ->maxLength(255)
-                    ->columnSpanFull()
-                    ->helperText('What this piece is called. The slug and SEO title come from it.'),
+                    ->placeholder('Mid-Century Modern Coffee Bar Wall Art')
+                    ->helperText('The URL is generated from this.'),
 
                 TextInput::make('subtitle')
                     ->label('Subtitle')
                     ->maxLength(255)
-                    ->columnSpanFull()
-                    ->helperText('One editorial line, shown on listing cards. Optional.'),
+                    ->placeholder('Warm retro tones for a kitchen nook'),
 
                 Textarea::make('description')
+                    ->columnSpanFull()
                     ->label('Description')
                     ->rows(6)
-                    ->columnSpanFull()
-                    ->helperText(
-                        'Written for a person, not for search engines — the meta description '
-                        .'is generated from this. Required before publishing.'
-                    ),
-            ]),
+                    ->placeholder('Where the idea came from, how it prints, what it pairs with.')
+                    ->helperText('Required to publish.'),
+            ]);
+    }
 
-            Section::make('Pricing')->columns(3)->schema([
-                TextInput::make('price_cents')
-                    ->label('Price')
-                    ->numeric()
-                    ->required()
-                    ->prefix('$')
-                    ->minValue(config('store.pricing.minimum_price_cents') / 100)
-                    ->formatStateUsing(fn (?int $state): ?string => $state === null ? null : number_format($state / 100, 2, '.', ''))
-                    ->dehydrateStateUsing(fn (?string $state): int => (int) round(((float) $state) * 100))
-                    // Below ~$1.99 the fixed per-transaction fee dominates
-                    // whatever the sale price is. See §6.12.
-                    ->helperText('Minimum $'.number_format(config('store.pricing.minimum_price_cents') / 100, 2)
-                        .' — below that, payment fees eat most of the sale.'),
+    private static function artworkSection(): Section
+    {
+        return Section::make('Artwork')
+            ->description('Public previews — capped in resolution and watermarked. Never the file the customer buys.')
+            ->collapsible()
+            ->schema([
+                // Upload wiring lands with the queued variant generation.
+            ]);
+    }
 
-                TextInput::make('sale_price_cents')
-                    ->label('Sale price')
-                    ->numeric()
-                    ->prefix('$')
-                    ->formatStateUsing(fn (?int $state): ?string => $state === null ? null : number_format($state / 100, 2, '.', ''))
-                    ->dehydrateStateUsing(fn (?string $state): ?int => $state === null || $state === '' ? null : (int) round(((float) $state) * 100)),
+    private static function filesSection(): Section
+    {
+        return Section::make('Files')
+            ->description('What the customer downloads. Stored privately.')
+            ->collapsible()
+            ->schema([]);
+    }
 
-                Select::make('type')
-                    ->label('Type')
-                    ->options(collect(ProductType::cases())->mapWithKeys(fn ($t) => [$t->value => $t->label()]))
-                    ->default(ProductType::Single->value)
-                    ->required(),
+    private static function seoSection(): Section
+    {
+        return Section::make('Search engines')
+            ->description('Generated automatically. Fill a field only to override it.')
+            ->collapsible()
+            ->collapsed()
+            ->schema([
+                TextInput::make('seo_title')
+                    ->label('SEO title')
+                    ->maxLength(60)
+                    ->placeholder('Generated from the title and attributes'),
 
-                DateTimePicker::make('sale_starts_at')->label('Sale starts'),
-                DateTimePicker::make('sale_ends_at')->label('Sale ends')
-                    ->helperText('Outside this window the full price applies.'),
-            ]),
+                Textarea::make('seo_description')
+                    ->label('Meta description')
+                    ->rows(3)
+                    ->maxLength(160)
+                    ->placeholder('Generated from the description'),
+            ]);
+    }
 
-            Section::make('Classification')
-                ->description('Three choices. Ratio, orientation and colour are read from your files.')
-                ->columns(3)
-                ->schema(self::manualAttributeSelects()),
+    // ── Sidebar ──────────────────────────────────────────────────────────
 
-            Section::make('Publishing')->columns(3)->schema([
-                Select::make('status')
-                    ->options(collect(ProductStatus::cases())->mapWithKeys(fn ($s) => [$s->value => $s->label()]))
-                    ->default(ProductStatus::Draft->value)
-                    ->required(),
+    private static function publishSection(): Section
+    {
+        return Section::make('Publish')->schema([
+            Select::make('status')
+                ->label('Status')
+                ->options(collect(ProductStatus::cases())->mapWithKeys(fn ($s) => [$s->value => $s->label()]))
+                ->default(ProductStatus::Draft->value)
+                ->native(false)
+                ->required(),
 
-                DateTimePicker::make('published_at')->label('Publish at'),
+            DateTimePicker::make('published_at')
+                ->label('Publish at')
+                ->native(false)
+                ->placeholder('Immediately'),
 
-                Toggle::make('is_ai_generated')
-                    ->label('AI-generated artwork')
-                    ->default(true)
-                    ->helperText('Shows the disclosure badge on the product page.'),
-            ]),
+            Toggle::make('is_ai_generated')
+                ->label('Made with AI')
+                ->default(true)
+                ->helperText('Shows the disclosure badge.'),
         ]);
+    }
+
+    private static function pricingSection(): Section
+    {
+        $floor = (int) config('store.pricing.minimum_price_cents') / 100;
+
+        // Three across in the wide column: a price field stretched to full
+        // width reads as if it expects a long value.
+        return Section::make('Pricing')->columns(3)->schema([
+            TextInput::make('price_cents')
+                ->label('Price')
+                ->numeric()
+                ->required()
+                ->prefix('$')
+                ->minValue($floor)
+                ->formatStateUsing(fn (?int $state): ?string => $state === null ? null : number_format($state / 100, 2, '.', ''))
+                ->dehydrateStateUsing(fn (?string $state): int => (int) round(((float) $state) * 100))
+                // Below roughly $1.99 the fixed per-transaction fee takes most
+                // of the sale whatever the price is. See §6.12.
+                ->helperText('Minimum $'.number_format($floor, 2).'.'),
+
+            Select::make('type')
+                ->label('Type')
+                ->options(collect(ProductType::cases())->mapWithKeys(fn ($t) => [$t->value => $t->label()]))
+                ->default(ProductType::Single->value)
+                ->native(false)
+                ->required(),
+
+            // Three fields collapse into one checkbox until a sale exists.
+            Toggle::make('has_sale')
+                ->label('Put on sale')
+                ->inline(false)
+                ->live()
+                ->dehydrated(false)
+                ->default(fn (Get $get): bool => filled($get('sale_price_cents'))),
+
+            TextInput::make('sale_price_cents')
+                ->label('Sale price')
+                ->numeric()
+                ->prefix('$')
+                ->visible(fn (Get $get): bool => (bool) $get('has_sale'))
+                ->formatStateUsing(fn (?int $state): ?string => $state === null ? null : number_format($state / 100, 2, '.', ''))
+                ->dehydrateStateUsing(fn (?string $state): ?int => blank($state) ? null : (int) round(((float) $state) * 100)),
+
+            DateTimePicker::make('sale_starts_at')
+                ->label('On sale from')
+                ->native(false)
+                ->placeholder('Now')
+                ->visible(fn (Get $get): bool => (bool) $get('has_sale')),
+
+            DateTimePicker::make('sale_ends_at')
+                ->label('Until')
+                ->native(false)
+                ->placeholder('No end date')
+                ->visible(fn (Get $get): bool => (bool) $get('has_sale')),
+        ]);
+    }
+
+    private static function classificationSection(): Section
+    {
+        return Section::make('Classification')
+            ->description('Ratio, orientation and colour come from your files.')
+            ->schema(self::manualAttributeSelects());
     }
 
     /** @return list<Select> */
     private static function manualAttributeSelects(): array
     {
+        $placeholders = [
+            'style' => 'Mid-Century Modern',
+            'room' => 'Kitchen, Coffee Bar',
+            'theme' => 'Coffee',
+        ];
+
         return collect(Attribute::MANUAL)
             ->map(fn (string $key): Select => Select::make("attr_{$key}")
                 ->label(str($key)->headline()->toString())
+                ->placeholder($placeholders[$key] ?? null)
                 ->multiple($key === 'room')
                 ->searchable()
                 ->preload()
+                ->native(false)
                 ->options(fn (): array => Attribute::where('key', $key)
                     ->first()?->values()
                     ->with('translations')
@@ -134,35 +231,5 @@ class ProductForm
                     ->mapWithKeys(fn ($v): array => [$v->id => $v->label('en')])
                     ->all() ?? []))
             ->all();
-    }
-
-    private static function filesTab(): Tab
-    {
-        return Tab::make('Files & Formats')->schema([
-            Section::make('Artwork')
-                ->description('Public previews. Capped in resolution and watermarked at large sizes — never the file the customer buys.')
-                ->schema([
-                    // Upload handling is wired in Phase 1b alongside the
-                    // queued variant generation.
-                ]),
-
-            Section::make('Product files')
-                ->description('What the customer downloads. Stored privately and only ever served through a download grant.')
-                ->schema([]),
-        ]);
-    }
-
-    private static function seoTab(): Tab
-    {
-        return Tab::make('SEO')->schema([
-            Section::make()
-                ->description('Generated from the product. Editing any field here stops automation touching it again.')
-                ->schema([
-                    TextInput::make('seo_title')->label('SEO title')->maxLength(60)
-                        ->helperText('Leave empty to generate from the title and attributes.'),
-                    Textarea::make('seo_description')->label('Meta description')->rows(3)->maxLength(160)
-                        ->helperText('Leave empty to generate from the description.'),
-                ]),
-        ]);
     }
 }
