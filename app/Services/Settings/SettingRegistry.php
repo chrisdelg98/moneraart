@@ -349,7 +349,40 @@ final class SettingRegistry
                 label: 'Product description drafts',
             ),
 
-            // ── SEO ──────────────────────────────────────────────────────
+            // -- Watermark (§10.3) --------------------------------------
+            new SettingDefinition(
+                key: 'watermark.enabled',
+                group: 'watermark',
+                type: 'boolean',
+                default: true,
+                validation: 'boolean',
+                label: 'Watermark large previews',
+                help: 'Applied to the 1280px and 1920px sizes only.',
+            ),
+            new SettingDefinition(
+                key: 'watermark.path',
+                group: 'watermark',
+                validation: 'nullable|string|max:255',
+                label: 'Watermark image',
+            ),
+            new SettingDefinition(
+                key: 'watermark.opacity',
+                group: 'watermark',
+                type: 'integer',
+                default: 10,
+                validation: 'integer|min:1|max:50',
+                label: 'Opacity (%)',
+            ),
+            new SettingDefinition(
+                key: 'watermark.width_percent',
+                group: 'watermark',
+                type: 'integer',
+                default: 100,
+                validation: 'integer|min:10|max:100',
+                label: 'Width (% of image)',
+            ),
+
+            // -- SEO -----─────────────────────────────────────────────────
             new SettingDefinition(
                 key: 'seo.allow_indexing',
                 group: 'seo',
