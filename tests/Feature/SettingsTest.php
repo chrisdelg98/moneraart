@@ -127,3 +127,28 @@ it('forgets a setting and returns to the default', function (): void {
     Settings::forget('download.max_downloads');
     expect(Settings::get('download.max_downloads'))->toBe(5);
 });
+
+it('defaults AI assistance to off so every field stays manual', function (): void {
+    expect(Settings::get('ai.provider'))->toBe('none')
+        ->and(Settings::get('ai.api_key'))->toBeNull()
+        ->and(Settings::get('ai.feature.descriptions'))->toBeFalse();
+});
+
+it('encrypts the AI api key', function (): void {
+    Settings::set('ai.api_key', 'sk-test-abcd1234');
+
+    expect(Setting::where('key', 'ai.api_key')->value('value'))->not->toBe('sk-test-abcd1234')
+        ->and(Settings::get('ai.api_key'))->toBe('sk-test-abcd1234')
+        ->and(Settings::maskedHint('ai.api_key'))->toBe('••••••••1234');
+});
+
+it('lets each AI feature be switched off independently', function (): void {
+    Settings::setMany([
+        'ai.provider' => 'openai',
+        'ai.feature.translations' => true,
+        'ai.feature.seo_copy' => false,
+    ]);
+
+    expect(Settings::get('ai.feature.translations'))->toBeTrue()
+        ->and(Settings::get('ai.feature.seo_copy'))->toBeFalse();
+});

@@ -712,8 +712,90 @@ SEO metadata is generated **per locale from that locale's content** (§11.1), ne
 the English meta description — Spanish search queries are not translated English queries, and a
 translated meta description targets the wrong phrases.
 
-Legal documents are **always translated by a human**. A machine-translated terms page is not a
-document anyone should rely on in a dispute.
+Legal documents are **always translated by a human**, and they are not translated at runtime at all.
+Each version stores both languages as finished pages (§4.7.1); the site serves whichever the
+visitor's locale selects, and the language switcher moves between them. A machine-translated terms
+page is not a document anyone should rely on in a dispute.
+
+#### 4.7.5.1 AI providers — configurable, not hard-coded
+
+Translation is the first AI-assisted feature, not the only one: SEO copy suggestions (§11.1) and
+alt-text generation (§10.2) use the same machinery. So the provider is a **configured choice**, the
+way payments and storage are — not a dependency compiled into the code.
+
+```php
+interface AiProvider
+{
+    public function key(): string;                 // 'anthropic', 'openai', 'gemini', 'deepl'
+    public function isConfigured(): bool;
+
+    /** @return array<string, string>  model id => display name */
+    public function availableModels(): array;
+
+    public function translate(TranslationRequest $request): TranslationResult;
+    public function complete(CompletionRequest $request): CompletionResult;
+
+    public function testConnection(): HealthReport;
+    public function settingsSchema(): array;       // drives the admin form automatically
+}
+```
+
+Planned implementations: `AnthropicProvider`, `OpenAiProvider`, `GeminiProvider`, `DeepLProvider`
+(translation only — it has no `complete()`), and `NullProvider`, which is the default and simply
+reports "not configured" so every field stays manual.
+
+**The admin page**
+
+```
+┌─ AI assistance ──────────────────────────────────────────────────┐
+│                                                                   │
+│  Provider     [ Anthropic  ▾ ]   Anthropic · OpenAI · Gemini ·    │
+│                                   DeepL · None                    │
+│                                                                   │
+│  API key      [ ••••••••••••••••••7c1a                        ]   │
+│                                                                   │
+│  Model        [ claude-haiku-4-5                            ▾ ]   │
+│               ↻ fetched from the provider — 14 models available   │
+│                                                                   │
+│  [ Test connection ]                                              │
+│                                                                   │
+│  ── Status ────────────────────────────────────────────────────   │
+│  ✅ Key valid                                                     │
+│  ✅ Model available                                               │
+│  ✅ Test translation  "Arte mural" → "Wall art"  · 0.4s · $0.0001 │
+│                                                                   │
+│  ── Used for ──────────────────────────────────────────────────   │
+│  ☑ Draft translations        ☑ SEO copy suggestions               │
+│  ☑ Alt text suggestions      ☐ Product description drafts         │
+└───────────────────────────────────────────────────────────────────┘
+```
+
+Three decisions behind this:
+
+**The model list is fetched, not hard-coded.** Anthropic, OpenAI and Gemini all expose a models
+endpoint. Hard-coding model names guarantees the dropdown is wrong within months and that changing
+model requires a developer — which is exactly the WooCommerce problem this project exists to avoid.
+A curated static list is only the fallback when a provider has no listing endpoint.
+
+**The test shows a real translation with its real cost.** Not "connection OK" — an actual round
+trip with the latency and the price. It is the only way the owner can judge whether the model is
+worth its cost without reading a pricing page.
+
+**Each feature can be switched off independently.** Someone may want draft translations but write
+their own SEO copy. A provider that is configured is not thereby given permission to touch
+everything.
+
+**Cost context.** A product description is roughly 600 input and 250 output tokens including the
+voice-guide system prompt. A 100-product catalog therefore costs cents on any current model, so
+**cost is not a meaningful selection criterion at this volume** — quality and voice fidelity are.
+The static system prompt should carry a cache breakpoint regardless, since it is identical on every
+call.
+
+**Why an instructable model rather than a pure translation engine.** Product copy has a voice — the
+same voice documented in `legal_content.es.md` §1. DeepL and Google Translate render it accurately
+and flatly. An LLM can be handed the voice guide as a system prompt and told to translate the tone
+rather than the words. DeepL remains available behind the same interface for anyone who prefers a
+dedicated engine, and its free tier covers this volume entirely.
 
 #### 4.7.6 Everything else that has a language
 

@@ -293,6 +293,62 @@ final class SettingRegistry
                 config: 'mail.from.address',
             ),
 
+            // ── AI assistance (§4.7.5.1) ─────────────────────────────────
+            new SettingDefinition(
+                key: 'ai.provider',
+                group: 'ai',
+                default: 'none',
+                validation: 'required|in:none,anthropic,openai,gemini,deepl',
+                label: 'Provider',
+                help: 'Leave as None to keep every field manual.',
+            ),
+            new SettingDefinition(
+                key: 'ai.api_key',
+                group: 'ai',
+                secret: true,
+                validation: 'nullable|string|max:255',
+                label: 'API key',
+            ),
+            new SettingDefinition(
+                key: 'ai.model',
+                group: 'ai',
+                validation: 'nullable|string|max:120',
+                label: 'Model',
+                help: 'Fetched from the provider when the key is valid.',
+            ),
+            new SettingDefinition(
+                key: 'ai.feature.translations',
+                group: 'ai',
+                type: 'boolean',
+                default: true,
+                validation: 'boolean',
+                label: 'Draft translations',
+            ),
+            new SettingDefinition(
+                key: 'ai.feature.seo_copy',
+                group: 'ai',
+                type: 'boolean',
+                default: true,
+                validation: 'boolean',
+                label: 'SEO copy suggestions',
+            ),
+            new SettingDefinition(
+                key: 'ai.feature.alt_text',
+                group: 'ai',
+                type: 'boolean',
+                default: true,
+                validation: 'boolean',
+                label: 'Alt text suggestions',
+            ),
+            new SettingDefinition(
+                key: 'ai.feature.descriptions',
+                group: 'ai',
+                type: 'boolean',
+                default: false,
+                validation: 'boolean',
+                label: 'Product description drafts',
+            ),
+
             // ── SEO ──────────────────────────────────────────────────────
             new SettingDefinition(
                 key: 'seo.allow_indexing',
