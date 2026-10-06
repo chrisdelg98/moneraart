@@ -50,7 +50,10 @@ database/*.sqlite
 /vendor/
 /node_modules/
 /public/build/
+/public/css/filament
+/public/fonts/filament
 /public/hot
+/public/js/filament
 /public/storage
 /bootstrap/cache/*
 !/bootstrap/cache/.gitignore

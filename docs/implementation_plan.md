@@ -36,22 +36,22 @@ framework and API versions move faster than plans do.
 
 | Layer | Choice | Why this and not the alternative |
 |---|---|---|
-| Language | PHP 8.3+ | Typed properties, enums, readonly. Enums carry order/payment state. |
-| Framework | Laravel 12+ **[VERIFY latest stable at kickoff]** | Queues, encryption, signed URLs, policies, scheduler all first-party. Nothing to assemble. |
-| Admin | Filament v4 **[VERIFY]** | Delivers the "WooCommerce admin" in days, not months: resources, tables, forms, actions, MFA. |
+| Language | PHP 8.3+ (**running 8.5.4**) | Typed properties, enums, readonly. Enums carry order/payment state. |
+| Framework | **Laravel 13.35** | Queues, encryption, signed URLs, policies, scheduler all first-party. Nothing to assemble. |
+| Admin | **Filament 5.10** | Delivers the "WooCommerce admin" in days, not months: resources, tables, forms, actions, MFA. |
 | DB | MySQL 8.0+ (PostgreSQL 16 also supported) | MySQL for host ubiquity. No vendor-specific SQL except where noted. |
 | Cache / Queue / Session | Redis 7 | One dependency serving three needs. |
 | Queue runner | Laravel Horizon | Gives the admin a real queue dashboard instead of a black box. |
 | Storefront JS | Alpine.js 3 + a few hand-written modules | No SPA, no hydration. See the performance budget in §12.6. |
 | Admin JS | Livewire (via Filament) | The admin may be heavy; the storefront may not. |
 | CSS | Tailwind CSS 4 **[VERIFY]**, two separate builds | Storefront CSS must not carry admin classes. |
-| Images | `spatie/image` on the **libvips** driver, Imagick fallback | libvips is several times faster and far lighter on RAM for the resize fan-out in §10. |
+| Images | `spatie/image` — **GD on this machine**, libvips preferred in production | GD measured at 3.0 s for the full ten-derivative fan-out, with WebP *and* AVIF support. Fast enough on a queue. Its cost is memory, not speed — see §10.5. |
 | Payments | PayPal Orders v2 + Webhooks v1, called directly via Laravel's HTTP client | ~400 lines of focused client we control, instead of a heavy SDK we do not. See §6.3. |
 | Search | **Meilisearch** via Laravel Scout | Typo tolerance out of the box, sub-50 ms, ~100 MB RAM, per-language indexes. MySQL FULLTEXT returns nothing for `mid centry modern`; this returns the right answer. See §12.7. |
 | Storage | Flysystem: `public` (CDN assets), `private` (sellable files), `backups` | Driver-swappable: local disk in dev, S3-compatible in production, identical code. |
 | Email | SMTP configured **in the admin UI**, not only `.env` | See §15. |
 | Edge | Cloudflare (CDN + WAF + image caching) | The free tier already covers a store this size. |
-| Tests | Pest 3 **[VERIFY]** | Readable feature tests; the money paths in §21 are non-negotiable. |
+| Tests | **Pest 4** | Readable feature tests; the money paths in §21 are non-negotiable. |
 
 ### 1.1 Dependencies we deliberately do **not** take
 
@@ -67,8 +67,8 @@ framework and API versions move faster than plans do.
 ### 1.2 Composer manifest (initial)
 
 ```
-laravel/framework           ^12.0   [VERIFY]
-filament/filament           ^4.0    [VERIFY]
+laravel/framework           ^13.0   installed 13.35
+filament/filament           ^5.10   installed
 laravel/horizon             ^5.0
 laravel/scout               ^10.0
 meilisearch/meilisearch-php ^1.0
@@ -78,8 +78,8 @@ spatie/laravel-backup       ^9.0
 sentry/sentry-laravel       ^4.0    (optional, §19)
 
 require-dev:
-pestphp/pest                ^3.0
-larastan/larastan           ^3.0    (level 6 minimum)
+pestphp/pest                ^4.7    installed
+larastan/larastan           ^3.12   installed, level 6, clean
 laravel/pint                ^1.0
 ```
 
@@ -1990,9 +1990,40 @@ Upload original  (validated: real MIME sniffing, dimension cap, ≤50 MB)
    → purge the CDN path for this product
 ```
 
-Running on libvips, a 6000×4000 original fans out to ten derivatives in roughly a second. On GD it
-is an order of magnitude slower and risks exhausting PHP's memory limit — hence the driver choice
-in §1.
+### 10.2.1 Measured on this machine — GD is viable, memory is the constraint
+
+Benchmarked rather than assumed. A synthetic 6000×4000 original through the full fan-out
+(five widths × WebP + AVIF), PHP 8.5 with GD:
+
+| Width | WebP | AVIF | Output size |
+|---|---|---|---|
+| 320 | 0.010 s | 0.064 s | 18 / 15 KB |
+| 640 | 0.029 s | 0.102 s | 40 / 29 KB |
+| 960 | 0.050 s | 0.751 s | 61 / 32 KB |
+| 1280 | 0.085 s | 0.193 s | 85 / 42 KB |
+| 1920 | 0.163 s | 0.232 s | 129 / 61 KB |
+| **Total** | **≈ 3.0 s** | | **peak RSS 188 MB** |
+
+Two conclusions, and the second is the one that matters:
+
+**Speed is a non-issue.** Three seconds for ten derivatives runs on the `media` queue where nobody
+is waiting. The original plan's preference for libvips was about an order of magnitude on a
+operation that is already fast enough. GD also supports **both WebP and AVIF** on this build, so
+nothing in §10.2 has to change.
+
+**Memory is the real constraint.** A 6000×4000 truecolor raster is 96 MB in GD before any work
+begins, and the peak lands at 188 MB. Against PHP's default `memory_limit` of 128 M, the first
+real upload would have crashed — so `memory_limit` is now **512 M**, and that is a deployment
+requirement, not a local convenience.
+
+This also makes the dimension cap in §16.5 **load-bearing rather than a security nicety**. Memory
+scales with pixel count: an 8000×8000 upload needs roughly 256 MB for the source raster alone, and
+a deliberately crafted image is a trivial denial of service. The cap is enforced at **50
+megapixels**, checked from the image header *before* the file is decoded.
+
+Production guidance: web processes 256 M (they never process images — it is queued), queue workers
+512 M or more. Install libvips where the host allows it; it lowers the memory ceiling considerably
+and is the better choice at volume. GD is the floor, and the floor is high enough.
 
 ### 10.3 Watermarking
 
@@ -3214,7 +3245,8 @@ are not features; they are the reasons the store does not lose money or data.
 | **PayPal account limitation or fund hold** | **Funds inaccessible; both stores stop** | The highest-probability operational risk at this scale — see §24.3 |
 | Shared PayPal account across two stores | A dispute problem in one store limits funds for both | Separate REST apps per store (§6.11); separate business accounts if risk profiles diverge |
 | AI-generated work challenged on copyright or platform-policy grounds | Takedown, or inability to enforce the licence sold | Disclose AI generation openly (§7.7, legal draft); sell a **licence to use the files**, never a transfer of copyright |
-| libvips unavailable on the host | Image pipeline fails at deploy | Imagick fallback detected at boot; system check flags it before launch |
+| libvips unavailable on the host | None — GD measured sufficient (§10.2.1) | GD handles WebP and AVIF at ~3 s per product. Risk downgraded from the original plan. |
+| PHP `memory_limit` too low for image processing | First upload of a large original crashes | 512 M required on queue workers; the setup wizard system check asserts it (§3.3) |
 | Single server failure | Total outage | Documented 4-hour RTO; infrastructure as code so a rebuild is scripted, not improvised |
 
 ### 24.2 Decisions to confirm before Phase 0
