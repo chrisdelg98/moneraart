@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             AttributeSeeder::class,
+            LegalDocumentSeeder::class,
         ]);
     }
 }

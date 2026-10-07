@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Services\Media\ImagePipeline;
 use App\Support\Facades\Settings;
 use Database\Seeders\AttributeSeeder;
+use Database\Seeders\LegalDocumentSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 
@@ -120,4 +121,28 @@ it('offers filters only for values a product actually uses', function (): void {
         ->assertSee($style->label('en'))
         ->assertSee('data-facet', escape: false)
         ->assertDontSee('Art Deco');
+});
+
+it('states the real resolution of a product, never a house figure', function (): void {
+    // The terms point at the product page for resolution, so this has to be
+    // what the customer actually gets.
+    $product = Product::factory()->published()->withTranslation('en')->create();
+    app(StoreProductFile::class)($product, artwork(1200, 1600), 'art.jpg');
+
+    $html = $this->get('/art/'.$product->translate('en')->slug)->assertOk()->getContent();
+
+    // This file carries no density in its header, so the page states the
+    // format rather than inventing a resolution for it.
+    expect($html)->toContain('JPG')
+        ->and($html)->not->toContain('300 DPI');
+});
+
+it('never promises a blanket resolution in the terms', function (): void {
+    $this->seed(LegalDocumentSeeder::class);
+
+    // Files vary, so a universal claim is a misrepresentation waiting to
+    // happen. The product page is the source of truth.
+    $this->get('/terms')->assertOk()
+        ->assertDontSee('300 DPI')
+        ->assertSee('Every product page lists the resolution');
 });

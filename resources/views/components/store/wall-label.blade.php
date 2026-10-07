@@ -12,6 +12,16 @@
     $translation = $product->translate();
     $price = $product->effectivePrice();
     $ratios = $product->valuesFor('ratio')->map(fn ($v) => $v->label())->implode(', ');
+
+    // Read from the files themselves. The terms point here for resolution, so
+    // this has to be what the customer actually gets — not a house figure.
+    $resolutions = $product->relationLoaded('files')
+        ? $product->files->pluck('dpi')->filter()->unique()->sort()->values()
+        : collect();
+
+    $formats = $product->relationLoaded('files')
+        ? $product->files->pluck('format')->filter()->unique()->map(fn ($f) => strtoupper($f))->values()
+        : collect();
 @endphp
 
 <div {{ $attributes->class(['flex flex-col gap-4']) }}>
@@ -45,6 +55,23 @@
                     · {{ $ratios }}
                 @endif
             </dd>
+        @endif
+
+        @if ($resolutions->isNotEmpty())
+            <dt class="label self-center">Resolution</dt>
+            <dd>
+                @if ($resolutions->count() === 1)
+                    {{ $resolutions->first() }} DPI
+                @else
+                    {{ $resolutions->first() }}–{{ $resolutions->last() }} DPI
+                @endif
+                @if ($formats->isNotEmpty())
+                    · {{ $formats->implode(', ') }}
+                @endif
+            </dd>
+        @elseif ($formats->isNotEmpty())
+            <dt class="label self-center">Format</dt>
+            <dd>{{ $formats->implode(', ') }}</dd>
         @endif
 
         <dt class="label self-center">Delivery</dt>

@@ -8,6 +8,7 @@ use App\Http\Controllers\RenewDownloadController;
 use App\Http\Controllers\Storefront\CartController;
 use App\Http\Controllers\Storefront\CheckoutController;
 use App\Http\Controllers\Storefront\HomeController;
+use App\Http\Controllers\Storefront\LegalController;
 use App\Http\Controllers\Storefront\OrderSuccessController;
 use App\Http\Controllers\Storefront\ProductController;
 use App\Http\Controllers\Storefront\ShopController;
@@ -57,3 +58,7 @@ Route::get('/d/{token}', DownloadController::class)
 Route::post('/d/{grant:uuid}/renew', RenewDownloadController::class)
     ->middleware('throttle:3,60')
     ->name('download.renew');
+
+Route::get('/{slug}', LegalController::class)
+    ->whereIn('slug', ['terms', 'privacy', 'refunds', 'how-we-work'])
+    ->name('legal');

@@ -34,9 +34,9 @@
                     <input type="checkbox" id="terms" name="terms" value="1" required class="mt-1.5">
                     <label for="terms" class="text-sm">
                         I agree to the
-                        <a href="#" target="_blank" rel="noopener" class="underline underline-offset-4">Terms of Sale</a>
+                        <a href="{{ route('legal', 'terms') }}" target="_blank" rel="noopener" class="underline underline-offset-4">Terms of Sale</a>
                         and
-                        <a href="#" target="_blank" rel="noopener" class="underline underline-offset-4">Privacy Policy</a>,
+                        <a href="{{ route('legal', 'privacy') }}" target="_blank" rel="noopener" class="underline underline-offset-4">Privacy Policy</a>,
                         and I understand I'm buying files that arrive immediately and can't be returned.
                     </label>
                 </div>

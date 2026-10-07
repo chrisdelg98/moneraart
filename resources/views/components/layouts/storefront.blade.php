@@ -54,10 +54,10 @@
             </p>
 
             <nav aria-label="Legal" class="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-muted">
-                <a href="#" class="hover:text-ink">Terms</a>
-                <a href="#" class="hover:text-ink">Privacy</a>
-                <a href="#" class="hover:text-ink">Refunds</a>
-                <a href="#" class="hover:text-ink">How we work</a>
+                <a href="{{ route('legal', 'terms') }}" class="hover:text-ink">Terms</a>
+                <a href="{{ route('legal', 'privacy') }}" class="hover:text-ink">Privacy</a>
+                <a href="{{ route('legal', 'refunds') }}" class="hover:text-ink">Refunds</a>
+                <a href="{{ route('legal', 'how-we-work') }}" class="hover:text-ink">How we work</a>
             </nav>
         </div>
     </footer>
