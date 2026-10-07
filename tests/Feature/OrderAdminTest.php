@@ -155,3 +155,7 @@ it('surfaces orders stuck at pending', function (): void {
         ->filterTable('stuck')
         ->assertCanSeeTableRecords([$stuck]);
 });
+
+it('offers no way to create an order from the list', function (): void {
+    livewire(ListOrders::class)->assertActionDoesNotExist('create');
+});

@@ -113,3 +113,24 @@ it('requires a title', function (): void {
         ->call('create')
         ->assertHasFormErrors(['title']);
 });
+
+it('makes a published product visible without typing a date', function (): void {
+    // "Leave empty to publish immediately" has to actually mean that: the
+    // storefront scope requires published_at.
+    livewire(CreateProduct::class)
+        ->fillForm([
+            'title' => 'Visible Right Away',
+            'description' => 'A description.',
+            'price_cents' => '5.99',
+            'type' => 'single',
+            'status' => ProductStatus::Published->value,
+            'published_at' => null,
+        ])
+        ->call('create')
+        ->assertHasNoFormErrors();
+
+    $product = Product::firstOrFail();
+
+    expect($product->published_at)->not->toBeNull()
+        ->and(Product::visibleIn('en')->count())->toBe(1);
+});

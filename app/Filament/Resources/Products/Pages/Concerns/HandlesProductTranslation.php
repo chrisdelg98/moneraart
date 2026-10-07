@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Products\Pages\Concerns;
 
+use App\Enums\ProductStatus;
 use App\Models\Attribute;
 use App\Models\Product;
 use App\Models\ProductTranslation;
@@ -53,6 +54,12 @@ trait HandlesProductTranslation
     /** @param array{translation: array<string, mixed>, attributes: array<string, mixed>} $extracted */
     protected function saveTranslationAndAttributes(Product $product, array $extracted): void
     {
+        // "Leave empty to publish immediately" has to mean that. The storefront
+        // scope requires published_at, so a null one hides the product forever.
+        if ($product->status === ProductStatus::Published && $product->published_at === null) {
+            $product->forceFill(['published_at' => now()])->save();
+        }
+
         $locale = $this->editingLocale();
         $title = (string) ($extracted['translation']['title'] ?? '');
 
