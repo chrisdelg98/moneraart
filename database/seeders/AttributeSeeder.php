@@ -113,6 +113,11 @@ class AttributeSeeder extends Seeder
                     ['3-4', '3:4', '3:4'],
                     ['4-5', '4:5', '4:5'],
                     ['1-1', '1:1', '1:1'],
+                    // Landscape counterparts — detectable from a file, so they
+                    // need a value to match against.
+                    ['3-2', '3:2', '3:2'],
+                    ['4-3', '4:3', '4:3'],
+                    ['5-4', '5:4', '5:4'],
                     ['a-series', 'A-Series', 'Serie A'],
                     ['11-14', '11×14', '11×14'],
                     ['16-20', '16×20', '16×20'],
