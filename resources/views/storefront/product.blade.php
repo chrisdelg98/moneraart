@@ -46,13 +46,16 @@
             <x-store.wall-label :product="$product" heading="h1" />
 
             @if ($buyable)
-                <form method="POST" action="#" class="flex flex-col gap-3">
+                <form method="POST" action="{{ route('cart.add', $product->uuid) }}" class="flex flex-col gap-3">
                     @csrf
-                    <input type="hidden" name="product" value="{{ $product->uuid }}">
+
+                    @if (session('error'))
+                        <p role="alert" class="border-l-2 border-accent py-2 pl-3 text-sm">{{ session('error') }}</p>
+                    @endif
 
                     <button type="submit"
                             class="w-full border border-ink bg-ink px-6 py-3.5 text-paper transition-opacity hover:opacity-85">
-                        Add to cart — {{ $product->effectivePrice()->format() }}
+                        Add to cart &mdash; {{ $product->effectivePrice()->format() }}
                     </button>
 
                     <p class="label text-center">Instant download · No account needed</p>
