@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Actions\Products\StoreProductFile;
 use App\Enums\ProductStatus;
 use App\Models\Product;
 use App\Services\Cart\CartService;
@@ -18,15 +17,6 @@ beforeEach(function (): void {
     $this->seed(AttributeSeeder::class);
     $this->cart = app(CartService::class);
 });
-
-/** A product that can actually be sold: published, translated, with a file. */
-function sellable(int $cents = 599): Product
-{
-    $product = Product::factory()->published()->withTranslation('en')->create(['price_cents' => $cents]);
-    app(StoreProductFile::class)($product, artwork(1200, 1600), 'art.jpg');
-
-    return $product->refresh();
-}
 
 it('adds a product and reports the count', function (): void {
     $product = sellable();

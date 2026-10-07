@@ -1,9 +1,11 @@
 <?php
 
 declare(strict_types=1);
+use App\Actions\Products\StoreProductFile;
 use App\Enums\OrderStatus;
 use App\Models\Customer;
 use App\Models\Order;
+use App\Models\Product;
 use Tests\TestCase;
 
 /*
@@ -52,4 +54,13 @@ function pendingOrder(int $cents = 1438): Order
         'placed_at' => now(),
         'metadata' => ['paypal_order_id' => '5O190127TN364715T'],
     ]);
+}
+
+/** A product that can actually be sold: published, translated, with a file. */
+function sellable(int $cents = 599): Product
+{
+    $product = Product::factory()->published()->withTranslation('en')->create(['price_cents' => $cents]);
+    app(StoreProductFile::class)($product, artwork(1200, 1600), 'art.jpg');
+
+    return $product->refresh();
 }

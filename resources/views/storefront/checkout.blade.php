@@ -6,7 +6,7 @@
 
             {{-- Three fields. Every one we do not collect is one we do not have
                  to encrypt, protect or justify. See §7.2. --}}
-            <form method="POST" action="#" class="flex flex-col gap-6">
+            <form id="checkout-form" class="flex flex-col gap-6" novalidate>
                 @csrf
 
                 <div>
@@ -52,9 +52,17 @@
 
                 <div class="border-t rule pt-6">
                     <p class="label">Payment</p>
-                    <div class="mt-3 border rule px-6 py-8 text-center text-muted">
-                        PayPal arrives in the next step.
-                    </div>
+
+                    <p id="checkout-error" role="alert" hidden
+                       class="mt-3 border-l-2 border-accent py-2 pl-3 text-sm"></p>
+
+                    @if ($paypalClientId)
+                        <div id="paypal-buttons" class="mt-4 min-h-[3rem]"></div>
+                    @else
+                        <div class="mt-3 border rule px-6 py-8 text-center text-muted">
+                            Payments are not switched on yet.
+                        </div>
+                    @endif
                 </div>
             </form>
 
@@ -79,4 +87,101 @@
             </aside>
         </div>
     </div>
+
+    @if ($paypalClientId)
+        <x-slot:head>
+            {{-- The only third-party script on the storefront, and only on the
+                 one page that needs it. --}}
+            <script src="https://www.paypal.com/sdk/js?client-id={{ $paypalClientId }}&currency={{ $currency }}&intent=capture&disable-funding=paylater"
+                    data-namespace="paypalSdk" defer></script>
+        </x-slot:head>
+
+        @push('scripts')
+        @endpush
+
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const form = document.getElementById('checkout-form');
+                const errorBox = document.getElementById('checkout-error');
+                const token = form.querySelector('input[name="_token"]').value;
+
+                const fail = (message) => {
+                    errorBox.textContent = message;
+                    errorBox.hidden = false;
+                };
+
+                const post = async (url, body) => {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': token,
+                        },
+                        body: JSON.stringify(body),
+                    });
+
+                    const data = await response.json().catch(() => ({}));
+
+                    if (!response.ok) {
+                        throw new Error(data.message || 'Something went wrong. Please try again.');
+                    }
+
+                    return data;
+                };
+
+                const render = () => {
+                    if (!window.paypalSdk) {
+                        return fail('PayPal did not load. Check your connection and refresh.');
+                    }
+
+                    window.paypalSdk.Buttons({
+                        style: { layout: 'vertical', shape: 'rect', label: 'pay' },
+
+                        onClick: (data, actions) => {
+                            errorBox.hidden = true;
+
+                            // The browser never decides what anything costs — it
+                            // only says who is buying and that they agreed.
+                            if (!form.reportValidity()) {
+                                return actions.reject();
+                            }
+
+                            return actions.resolve();
+                        },
+
+                        createOrder: async () => {
+                            const payload = new FormData(form);
+
+                            const data = await post(@json(route('checkout.paypal.create')), {
+                                email: payload.get('email'),
+                                terms: payload.get('terms') ? 1 : 0,
+                                marketing: payload.get('marketing') ? 1 : 0,
+                            });
+
+                            sessionStorage.setItem('orderUuid', data.orderUuid);
+
+                            return data.paypalOrderId;
+                        },
+
+                        onApprove: async (data) => {
+                            const result = await post(@json(route('checkout.paypal.capture')), {
+                                orderUuid: sessionStorage.getItem('orderUuid'),
+                                paypalOrderId: data.orderID,
+                            });
+
+                            window.location.href = result.redirect;
+                        },
+
+                        onError: (err) => {
+                            fail(err?.message || 'We could not complete that payment. Please try again.');
+                        },
+                    }).render('#paypal-buttons');
+                };
+
+                // The SDK is deferred, so it may not be ready at DOMContentLoaded.
+                window.paypalSdk ? render() : window.addEventListener('load', render);
+            });
+        </script>
+    @endif
 </x-layouts.storefront>
