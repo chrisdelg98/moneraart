@@ -1,4 +1,4 @@
-@props(['product', 'index' => null, 'heading' => 'h1'])
+@props(['product', 'index' => null, 'heading' => 'h1', 'compact' => false])
 
 {{--
     The gallery placard beside a piece.
@@ -23,15 +23,16 @@
     @endif
 
     <div>
-        <{{ $heading }} class="text-balance text-3xl sm:text-4xl">
+        <{{ $heading }} @class(["text-balance", "text-xl sm:text-2xl" => $compact, "text-3xl sm:text-4xl" => ! $compact])>
             {{ $translation?->title }}
         </{{ $heading }}>
 
         @if ($translation?->subtitle)
-            <p class="mt-2 text-muted">{{ $translation->subtitle }}</p>
+            <p @class(["text-muted", "mt-1 text-sm" => $compact, "mt-2" => ! $compact])>{{ $translation->subtitle }}</p>
         @endif
     </div>
 
+    @unless ($compact)
     <dl class="grid gap-x-6 gap-y-1 text-sm sm:grid-cols-[auto_1fr]">
         <dt class="label self-center">Medium</dt>
         <dd>Digital print{{ $product->is_ai_generated ? ' · made with AI' : '' }}</dd>
@@ -49,8 +50,9 @@
         <dt class="label self-center">Delivery</dt>
         <dd>Instant download</dd>
     </dl>
+    @endunless
 
-    <p class="flex items-baseline gap-3 text-xl">
+    <p @class(["flex items-baseline gap-3", "text-base" => $compact, "text-xl" => ! $compact])>
         {{-- Price is full-contrast body colour, never "subtle" (§12.4.4). --}}
         <span>{{ $price->format() }}</span>
 

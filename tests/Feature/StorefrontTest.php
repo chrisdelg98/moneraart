@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Actions\Products\StoreProductFile;
 use App\Enums\ProductStatus;
+use App\Models\Attribute;
 use App\Models\Product;
 use App\Services\Media\ImagePipeline;
 use App\Support\Facades\Settings;
@@ -106,4 +107,17 @@ it('exposes the skip link and a single h1 on the product page', function (): voi
 
     expect($html)->toContain('Skip to content')
         ->and(substr_count($html, '<h1'))->toBe(1);
+});
+
+it('offers filters only for values a product actually uses', function (): void {
+    $product = Product::factory()->published()->withTranslation('en')->create();
+    $style = Attribute::where('key', 'style')->first()->values()->first();
+    $product->attributeValues()->sync([$style->id]);
+
+    // A filter for a style nothing has is a dead end the visitor has to
+    // discover by clicking it.
+    $this->get('/shop')->assertOk()
+        ->assertSee($style->label('en'))
+        ->assertSee('data-facet', escape: false)
+        ->assertDontSee('Art Deco');
 });
