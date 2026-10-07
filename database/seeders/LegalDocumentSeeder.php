@@ -50,7 +50,13 @@ We sell **digital files** — printable artwork, delivered as instant downloads.
 
 Our artwork is created with AI image-generation tools, then shaped by us: we start with an idea, generate and refine until something clicks, keep only what we would hang on our own wall, then edit, upscale and prepare every file for printing, in sizes that fit frames people actually own.
 
-So what you are buying is a curated, print-ready file: the selection, the preparation, the formats, and instant delivery.
+## What you are paying for
+
+Not the image as an object. What you buy is access to a file we have made ready for you, and the right to use it.
+
+The price covers the work around the piece: the concepts and the many attempts behind the one you see, the selecting, the editing and colour correction, the preparation for print at several sizes and ratios, and the storage and delivery that puts the files in your hands seconds after you decide.
+
+The artwork is where it starts. Everything that makes it printable, and yours to keep, is what you are paying for.
 
 ## What you can do with your files
 
@@ -76,7 +82,7 @@ Prices are shown in USD, and that is what you pay. Payment is handled by **PayPa
 
 ## Delivery
 
-Your files arrive **immediately** after payment. Download links appear on your confirmation page right away, and the same links go to your email. Links stay active for a limited time, with a set number of downloads per file.
+Your files arrive **as soon as the payment clears**, which is almost always immediate — download links appear on your confirmation page and go to your email. Occasionally a payment provider holds a payment for review; when that happens we email your files the moment it clears, and tell you so on the confirmation page. Links stay active for a limited time, with a set number of downloads per file.
 
 Need them again? Open any link and press **Email me a new link** — free, any time we still have your order on record.
 
@@ -142,11 +148,11 @@ No profiling. No advertising trackers. Nothing else.
 
 ## How we protect it
 
-Your email address and name are **encrypted** in our database — if it were ever stolen, those fields would not be readable. Encryption keys are stored separately from the data, and never alongside our backups. The whole site runs over HTTPS. Administrator access requires two-factor authentication, and any access to customer information is logged. Your purchased files are stored privately, reachable only through your own download links.
+Your email address and name are **encrypted** in our database — if it were ever stolen, those fields would not be readable. Encryption keys are stored separately from the data, and never alongside our backups. The whole site runs over HTTPS. Administrator accounts are protected by password, and viewing a customer's address in our admin is recorded with who did it and when. Your purchased files are stored privately, reachable only through your own download links.
 
 ## How long we keep it
 
-Order and payment records: 7 years for accounting, then anonymised. Your email address: until you ask us to remove it. Download activity: 1 year. Marketing list: until you unsubscribe. Server logs: 30 days.
+We keep order and payment records for as long as accounting and tax rules require, and your email address until you ask us to remove it or we no longer need it. Download activity and server logs are kept only as long as they are useful for support and security. You can ask us to delete your data at any time.
 
 ## Your rights
 
@@ -235,7 +241,7 @@ Anyone can type a prompt. The work is in everything that comes after:
 
 **Curation** — pieces chosen to live together.
 
-That part is genuinely ours, and it is what you are paying for.
+That part is genuinely ours, and together with the preparation, storage and delivery, it is what the price covers — not the image as an object.
 
 ## Questions people ask
 
