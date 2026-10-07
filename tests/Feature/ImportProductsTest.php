@@ -103,7 +103,7 @@ it('imports nothing when any row is invalid', function (): void {
 it('reports a missing title with its position', function (): void {
     $result = ($this->import)(json_encode([['price' => '5.99']]));
 
-    expect($result->errors[0])->toContain('Item 1')->toContain('title');
+    expect($result->errors[0])->toContain('Row 1')->toContain('title');
 });
 
 it('reports a missing price by product name', function (): void {

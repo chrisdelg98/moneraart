@@ -26,7 +26,7 @@ it('renders the import page', function (): void {
 it('imports pasted json as drafts', function (): void {
     livewire(ImportProducts::class)
         ->fillForm(['payload' => ImportProductsFromJson::sample()])
-        ->call('import');
+        ->call('importJson');
 
     expect(Product::count())->toBe(2)
         ->and(Product::pluck('status')->unique()->all())->toBe([ProductStatus::Draft]);
@@ -35,7 +35,7 @@ it('imports pasted json as drafts', function (): void {
 it('clears the box after a successful import', function (): void {
     livewire(ImportProducts::class)
         ->fillForm(['payload' => ImportProductsFromJson::sample()])
-        ->call('import')
+        ->call('importJson')
         ->assertFormSet(['payload' => '']);
 });
 
@@ -44,7 +44,7 @@ it('keeps the payload when the import fails, so it can be fixed', function (): v
 
     livewire(ImportProducts::class)
         ->fillForm(['payload' => $bad])
-        ->call('import')
+        ->call('importJson')
         ->assertFormSet(['payload' => $bad]);
 
     expect(Product::count())->toBe(0);
@@ -53,13 +53,13 @@ it('keeps the payload when the import fails, so it can be fixed', function (): v
 it('does nothing with an empty box', function (): void {
     livewire(ImportProducts::class)
         ->fillForm(['payload' => '   '])
-        ->call('import');
+        ->call('importJson');
 
     expect(Product::count())->toBe(0);
 });
 
 it('loads the example into the box', function (): void {
     livewire(ImportProducts::class)
-        ->callAction('loadSample')
+        ->call('loadSample')
         ->assertFormSet(fn (array $state): bool => str_contains((string) $state['payload'], 'Mid-Century'));
 });
