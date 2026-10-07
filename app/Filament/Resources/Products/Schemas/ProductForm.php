@@ -40,8 +40,6 @@ class ProductForm
                 Group::make()->columnSpan(['default' => 4, 'lg' => 3])->schema([
                     self::contentSection(),
                     self::pricingSection(),
-                    self::artworkSection(),
-                    self::filesSection(),
                 ]),
 
                 Group::make()->columnSpan(['default' => 4, 'lg' => 1])->schema([
@@ -80,24 +78,6 @@ class ProductForm
                     ->placeholder('Where the idea came from, how it prints, what it pairs with.')
                     ->helperText('Required to publish.'),
             ]);
-    }
-
-    private static function artworkSection(): Section
-    {
-        return Section::make('Artwork')
-            ->description('Public previews — capped in resolution and watermarked. Never the file the customer buys.')
-            ->collapsible()
-            ->schema([
-                // Upload wiring lands with the queued variant generation.
-            ]);
-    }
-
-    private static function filesSection(): Section
-    {
-        return Section::make('Files')
-            ->description('What the customer downloads. Stored privately.')
-            ->collapsible()
-            ->schema([]);
     }
 
     private static function seoSection(): Section

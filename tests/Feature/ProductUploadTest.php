@@ -22,18 +22,6 @@ beforeEach(function (): void {
     $this->pipeline = app(ImagePipeline::class);
 });
 
-/** Writes a real JPEG of the given size and colour, and returns its path. */
-function artwork(int $w, int $h, array $rgb = [180, 140, 90]): string
-{
-    $im = imagecreatetruecolor($w, $h);
-    imagefill($im, 0, 0, imagecolorallocate($im, ...$rgb));
-    $path = sys_get_temp_dir().'/'.uniqid('f_', true).'.jpg';
-    imagejpeg($im, $path, 92);
-    imagedestroy($im);
-
-    return $path;
-}
-
 it('stores a sellable file on the private disk under a uuid name', function (): void {
     $product = Product::factory()->create();
 

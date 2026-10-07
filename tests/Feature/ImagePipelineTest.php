@@ -15,22 +15,10 @@ beforeEach(function (): void {
     $this->pipeline = app(ImagePipeline::class);
 });
 
-/** Writes a real JPEG to a temp path and returns it. */
-function makeImage(int $w, int $h): string
-{
-    $im = imagecreatetruecolor($w, $h);
-    imagefill($im, 0, 0, imagecolorallocate($im, 180, 140, 90));
-    $path = sys_get_temp_dir().'/'.uniqid('art_', true).'.jpg';
-    imagejpeg($im, $path, 85);
-    imagedestroy($im);
-
-    return $path;
-}
-
 it('generates webp and avif variants at every width below the original', function (): void {
     $product = Product::factory()->create();
 
-    $image = $this->pipeline->process($product, makeImage(2400, 3200));
+    $image = $this->pipeline->process($product, artwork(2400, 3200));
 
     expect($image)->toBeInstanceOf(ProductImage::class)
         ->and($image->variants)->toHaveKeys(['webp', 'avif'])
@@ -45,7 +33,7 @@ it('generates webp and avif variants at every width below the original', functio
 it('never upscales past the original width', function (): void {
     $product = Product::factory()->create();
 
-    $image = $this->pipeline->process($product, makeImage(700, 900));
+    $image = $this->pipeline->process($product, artwork(700, 900));
 
     // 960, 1280 and 1920 would all be upscales — bandwidth for no detail.
     expect(array_map('intval', array_keys($image->variants['webp'])))->toBe([320, 640]);
@@ -54,7 +42,7 @@ it('never upscales past the original width', function (): void {
 it('records dimensions so the markup can prevent layout shift', function (): void {
     $product = Product::factory()->create();
 
-    $image = $this->pipeline->process($product, makeImage(1200, 1600));
+    $image = $this->pipeline->process($product, artwork(1200, 1600));
 
     expect($image->width)->toBe(1200)
         ->and($image->height)->toBe(1600)
@@ -64,7 +52,7 @@ it('records dimensions so the markup can prevent layout shift', function (): voi
 it('extracts a dominant colour for the loading placeholder', function (): void {
     $product = Product::factory()->create();
 
-    $image = $this->pipeline->process($product, makeImage(600, 600));
+    $image = $this->pipeline->process($product, artwork(600, 600));
 
     expect($image->dominant_color)->toMatch('/^#[0-9A-F]{6}$/');
 });
@@ -73,7 +61,7 @@ it('rejects an image above the megapixel cap before decoding it', function (): v
     $product = Product::factory()->create();
 
     // 9000x6000 = 54MP, over the 50MP limit.
-    $this->pipeline->process($product, makeImage(9000, 6000));
+    $this->pipeline->process($product, artwork(9000, 6000));
 })->throws(RuntimeException::class, 'megapixels');
 
 it('rejects a file that is not an image', function (): void {
@@ -87,7 +75,7 @@ it('rejects a file that is not an image', function (): void {
 it('re-encodes the original, which strips any embedded metadata', function (): void {
     $product = Product::factory()->create();
 
-    $image = $this->pipeline->process($product, makeImage(800, 800));
+    $image = $this->pipeline->process($product, artwork(800, 800));
 
     // Stored as webp regardless of the uploaded format — a copied file would
     // keep its original extension and its EXIF.
@@ -98,7 +86,7 @@ it('re-encodes the original, which strips any embedded metadata', function (): v
 it('sets the product cover when asked', function (): void {
     $product = Product::factory()->create();
 
-    $image = $this->pipeline->process($product, makeImage(800, 1000), isCover: true);
+    $image = $this->pipeline->process($product, artwork(800, 1000), isCover: true);
 
     expect($product->fresh()->cover_image_id)->toBe($image->id)
         ->and($image->is_cover)->toBeTrue();
@@ -107,7 +95,7 @@ it('sets the product cover when asked', function (): void {
 it('builds a srcset from the stored variant map without touching disk', function (): void {
     $product = Product::factory()->create();
 
-    $image = $this->pipeline->process($product, makeImage(2000, 2000));
+    $image = $this->pipeline->process($product, artwork(2000, 2000));
 
     expect($image->srcset('webp'))->toContain('320w')->toContain('1920w')
         ->and($image->orientation())->toBe('square');
@@ -115,7 +103,7 @@ it('builds a srcset from the stored variant map without touching disk', function
 
 it('builds urls correctly after a database round trip', function (): void {
     $product = Product::factory()->create();
-    $image = $this->pipeline->process($product, makeImage(1400, 1400));
+    $image = $this->pipeline->process($product, artwork(1400, 1400));
 
     // JSON turns the integer keys into strings; variantUrls must survive that.
     $reloaded = ProductImage::findOrFail($image->id);
