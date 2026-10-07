@@ -22,7 +22,7 @@ class ProductController
             ->firstOrFail();
 
         $product = $translation->product()
-            ->with(['translations', 'images', 'files', 'attributeValues.attribute'])
+            ->with(['translations', 'images', 'files', 'attributeValues.attribute', 'attributeValues.translations'])
             ->firstOrFail();
 
         // An archived product is gone on purpose: 410 de-indexes faster than a

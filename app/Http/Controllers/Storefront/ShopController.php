@@ -13,7 +13,7 @@ class ShopController
     public function __invoke(): View
     {
         $products = Product::visibleIn(app()->getLocale())
-            ->with(['translations', 'coverImage', 'attributeValues.attribute.values'])
+            ->with(['translations', 'coverImage', 'attributeValues.attribute.values', 'attributeValues.translations'])
             ->orderByDesc('published_at')
             ->get();
 

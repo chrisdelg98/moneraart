@@ -14,7 +14,7 @@ class HomeController
         $locale = app()->getLocale();
 
         $products = Product::visibleIn($locale)
-            ->with(['translations', 'coverImage', 'attributeValues.attribute'])
+            ->with(['translations', 'coverImage', 'attributeValues.attribute', 'attributeValues.translations'])
             ->orderByDesc('published_at')
             ->take(12)
             ->get();
