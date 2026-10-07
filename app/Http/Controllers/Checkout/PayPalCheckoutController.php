@@ -51,7 +51,8 @@ class PayPalCheckoutController
             ]);
 
             return response()->json([
-                'message' => 'We could not reach PayPal just now. Please try again in a moment.',
+                'message' => "PayPal isn't responding at the moment. Give it a few seconds and "
+                    .'try again — nothing has been charged.',
             ], 503);
         }
 
@@ -88,15 +89,21 @@ class PayPalCheckoutController
             // The webhook is the backstop: if the money did move, it arrives
             // anyway and fulfils the order. See §6.8.
             return response()->json([
-                'message' => 'We could not confirm the payment. If you were charged, your files '
-                    .'will arrive by email shortly — nothing is lost.',
+                'message' => "We're still confirming this payment with PayPal. The moment it "
+                    .'clears, your files go straight to your inbox. Nothing further is needed '
+                    .'from you.',
             ], 502);
         }
 
         $capture = $this->captureResource($response);
 
         if ($capture === null) {
-            return response()->json(['message' => 'PayPal returned an unexpected response.'], 502);
+            // What went wrong is our problem to diagnose, not the customer's
+            // to read. The log carries the detail; they get a next step.
+            return response()->json([
+                'message' => "We couldn't finish this payment. Please try again, or write to us "
+                    .'if it keeps happening.',
+            ], 502);
         }
 
         $outcome = $markPaid($order, $capture, 'capture');
@@ -104,8 +111,10 @@ class PayPalCheckoutController
         if (! $outcome->isSuccessful()) {
             return response()->json([
                 'message' => $outcome->result === 'manual_review'
-                    ? 'Your payment needs a quick manual check. We will email you shortly.'
-                    : 'That payment did not go through.',
+                    ? 'Your payment is going through a quick check on our side. We will email '
+                        .'your files as soon as it clears, usually within a few hours.'
+                    : "That payment didn't go through, and nothing was charged. You can try "
+                        .'again from your cart.',
                 'redirect' => URL::signedRoute('order.success', ['order' => $order->uuid]),
             ], 200);
         }

@@ -3,7 +3,7 @@
         <p class="label">One moment</p>
         <h1 class="mt-4 text-3xl">Finishing your order…</h1>
         <p class="mt-4 text-muted">
-            If this page does not move on, check your email — your files are sent there either way.
+            If this page stays put, check your email — your files are sent there either way.
         </p>
     </div>
 </x-layouts.storefront>

@@ -188,7 +188,9 @@ it('says so plainly when PayPal is unreachable, without losing the order', funct
 
     $this->postJson(route('checkout.paypal.create'), ['email' => 'buyer@example.com', 'terms' => 1])
         ->assertStatus(503)
-        ->assertJsonFragment(['message' => 'We could not reach PayPal just now. Please try again in a moment.']);
+        // The customer is told nothing was charged, which is the fact that
+        // matters most at this moment.
+        ->assertJsonFragment(['message' => "PayPal isn't responding at the moment. Give it a few seconds and try again — nothing has been charged."]);
 
     // The order survives for the reconciliation sweep to pick up.
     expect(Order::count())->toBe(1);

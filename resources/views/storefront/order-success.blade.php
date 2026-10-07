@@ -15,14 +15,14 @@
             <p class="label">Order {{ $order->number }}</p>
             <h1 class="mt-4 text-4xl">Almost there</h1>
             <p class="mt-5 max-w-prose text-lg text-muted">
-                Your payment needs a quick manual check on our side. We will email your files as
-                soon as it clears — usually within a few hours. Nothing further is needed from you.
+                Your payment is going through a quick check on our side. We'll email your files as
+                soon as it clears, usually within a few hours. Nothing further is needed from you.
             </p>
         @else
             <p class="label">Order {{ $order->number }}</p>
-            <h1 class="mt-4 text-4xl">That payment did not go through</h1>
+            <h1 class="mt-4 text-4xl">That payment didn't go through</h1>
             <p class="mt-5 text-lg text-muted">
-                Nothing was charged. You can try again from your cart.
+                Nothing was charged. Your cart is still waiting whenever you'd like to try again.
             </p>
         @endif
 
