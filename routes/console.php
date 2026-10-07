@@ -2,9 +2,13 @@
 
 declare(strict_types=1);
 
-use Illuminate\Foundation\Inspiring;
-use Illuminate\Support\Facades\Artisan;
+use App\Jobs\ReconcilePendingWebhooks;
+use App\Jobs\ReconcileStuckOrders;
+use Illuminate\Support\Facades\Schedule;
 
-Artisan::command('inspire', function (): void {
-    $this->comment(Inspiring::quote());
-})->purpose('Display an inspiring quote');
+/*
+ * Without these, a customer whose capture call and webhook both failed has paid
+ * and received nothing, and nothing recovers it. See §7.5 and §17.
+ */
+Schedule::job(new ReconcileStuckOrders)->everyTenMinutes()->withoutOverlapping();
+Schedule::job(new ReconcilePendingWebhooks)->everyFiveMinutes()->withoutOverlapping();
