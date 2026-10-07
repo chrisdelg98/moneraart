@@ -8,6 +8,7 @@ use App\Support\BlindIndex;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Notifications\Notifiable;
 
 /**
  * Only what delivering a purchase requires. No address, no phone, no password.
@@ -17,10 +18,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  *
  * @property string $email
  * @property string $email_hash
+ * @property bool $marketing_consent
+ * @property string $locale
  */
 class Customer extends Model
 {
-    use HasUuids;
+    use HasUuids, Notifiable;
 
     protected $guarded = ['id'];
 

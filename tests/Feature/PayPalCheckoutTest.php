@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\OrderStatus;
+use App\Models\DownloadGrant;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Services\Cart\CartService;
@@ -10,11 +11,13 @@ use App\Support\Facades\Settings;
 use Database\Seeders\AttributeSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
+    Notification::fake();
     Storage::fake('private');
     Storage::fake('public');
     $this->seed(AttributeSeeder::class);
@@ -153,7 +156,10 @@ it('captures, verifies and completes the purchase', function (): void {
 
     $order = Order::firstOrFail();
 
-    expect($order->status)->toBe(OrderStatus::Paid)
+    // Paid is not the end state: grants are issued and the email queued, so a
+    // successful capture lands on completed.
+    expect($order->status)->toBe(OrderStatus::Completed)
+        ->and(DownloadGrant::count())->toBe(1)
         ->and(Payment::count())->toBe(1)
         ->and($response->json('redirect'))->toContain('/order/'.$order->uuid)
         // The cart is only cleared once the money is confirmed.

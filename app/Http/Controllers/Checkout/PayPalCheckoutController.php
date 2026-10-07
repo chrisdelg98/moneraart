@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Checkout;
 
 use App\Actions\Checkout\PlaceOrder;
+use App\Actions\Orders\CompleteOrder;
 use App\Actions\Orders\MarkOrderPaid;
 use App\Models\Order;
 use App\Services\Cart\CartService;
@@ -70,6 +71,7 @@ class PayPalCheckoutController
         Request $request,
         PayPalOrderService $paypal,
         MarkOrderPaid $markPaid,
+        CompleteOrder $complete,
     ): JsonResponse {
         $data = $request->validate([
             'orderUuid' => ['required', 'uuid'],
@@ -118,6 +120,9 @@ class PayPalCheckoutController
                 'redirect' => URL::signedRoute('order.success', ['order' => $order->uuid]),
             ], 200);
         }
+
+        // Paid is not delivered. Grants and the email happen here.
+        $complete($outcome->order);
 
         $this->cart->clear();
 

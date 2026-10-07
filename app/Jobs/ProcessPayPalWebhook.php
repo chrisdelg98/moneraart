@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
+use App\Actions\Orders\CompleteOrder;
 use App\Actions\Orders\MarkOrderPaid;
+use App\Enums\OrderStatus;
 use App\Models\Order;
 use App\Models\WebhookEvent;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -76,7 +78,15 @@ class ProcessPayPalWebhook implements ShouldQueue
             return false;
         }
 
-        $markPaid($order, $resource, 'webhook');
+        $outcome = $markPaid($order, $resource, 'webhook');
+
+        // The customer may have closed the tab before the capture call
+        // returned; this is the path that still delivers their files.
+        if ($outcome->isSuccessful() && $outcome->order->status->canTransitionTo(
+            OrderStatus::Completed
+        )) {
+            app(CompleteOrder::class)($outcome->order);
+        }
 
         return true;
     }

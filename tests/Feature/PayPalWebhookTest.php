@@ -11,11 +11,14 @@ use App\Models\WebhookEvent;
 use App\Support\Facades\Settings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
+    Notification::fake();
+
     Settings::setMany([
         'paypal.mode' => 'sandbox',
         'paypal.sandbox.client_id' => 'test-client',
@@ -117,7 +120,9 @@ it('marks the order paid when the job runs', function (): void {
 
     $this->postJson(route('webhooks.paypal'), webhookPayload($order), signatureHeaders())->assertOk();
 
-    expect($order->fresh()->status)->toBe(OrderStatus::Paid)
+    // The webhook path delivers too — this is what rescues the customer who
+    // closed the tab before the capture call returned.
+    expect($order->fresh()->status)->toBe(OrderStatus::Completed)
         ->and(Payment::count())->toBe(1)
         ->and(WebhookEvent::first()->status)->toBe('processed');
 });
@@ -130,7 +135,7 @@ it('creates one payment when the capture path already paid the order', function 
     $this->postJson(route('webhooks.paypal'), webhookPayload($order), signatureHeaders())->assertOk();
 
     expect(Payment::count())->toBe(1)
-        ->and($order->fresh()->status)->toBe(OrderStatus::Paid);
+        ->and($order->fresh()->status)->toBe(OrderStatus::Completed);
 });
 
 it('applies the same amount verification as the capture path', function (): void {

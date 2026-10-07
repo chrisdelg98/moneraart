@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Checkout\PayPalCheckoutController;
+use App\Http\Controllers\DownloadController;
+use App\Http\Controllers\RenewDownloadController;
 use App\Http\Controllers\Storefront\CartController;
 use App\Http\Controllers\Storefront\CheckoutController;
 use App\Http\Controllers\Storefront\HomeController;
@@ -45,3 +47,13 @@ Route::get('/checkout/cancel', fn () => redirect()->route('cart'))->name('checko
 Route::get('/order/{order:uuid}', OrderSuccessController::class)
     ->middleware('signed')
     ->name('order.success');
+
+// Narrow limit: enumeration is pointless against 256 bits, but we refuse to be
+// a bandwidth amplifier. See §16.3.
+Route::get('/d/{token}', DownloadController::class)
+    ->middleware('throttle:20,1')
+    ->name('download');
+
+Route::post('/d/{grant:uuid}/renew', RenewDownloadController::class)
+    ->middleware('throttle:3,60')
+    ->name('download.renew');
