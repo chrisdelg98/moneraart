@@ -1,6 +1,9 @@
 <?php
 
 declare(strict_types=1);
+use App\Enums\OrderStatus;
+use App\Models\Customer;
+use App\Models\Order;
 use Tests\TestCase;
 
 /*
@@ -31,4 +34,22 @@ function artwork(int $width, int $height, array $rgb = [180, 140, 90]): string
     imagedestroy($image);
 
     return $path;
+}
+
+/** An order awaiting payment, for the given total in cents. */
+function pendingOrder(int $cents = 1438): Order
+{
+    $customer = Customer::forEmail('buyer@example.com');
+
+    return Order::create([
+        'number' => Order::nextNumber(),
+        'customer_id' => $customer->getKey(),
+        'status' => OrderStatus::Pending,
+        'currency' => 'USD',
+        'subtotal_cents' => $cents,
+        'total_cents' => $cents,
+        'email_hash' => $customer->email_hash,
+        'placed_at' => now(),
+        'metadata' => ['paypal_order_id' => '5O190127TN364715T'],
+    ]);
 }
