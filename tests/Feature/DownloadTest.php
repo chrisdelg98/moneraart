@@ -2,13 +2,11 @@
 
 declare(strict_types=1);
 
-use App\Actions\Checkout\PlaceOrder;
 use App\Actions\Downloads\IssueDownloadGrants;
 use App\Actions\Orders\CompleteOrder;
 use App\Enums\OrderStatus;
 use App\Models\DownloadGrant;
 use App\Models\DownloadLog;
-use App\Models\Order;
 use App\Notifications\DownloadLinksReady;
 use App\Services\Cart\CartService;
 use Database\Seeders\AttributeSeeder;
@@ -24,18 +22,6 @@ beforeEach(function (): void {
     $this->seed(AttributeSeeder::class);
     $this->cart = app(CartService::class);
 });
-
-/** A paid order ready to be completed. */
-function paidOrder(int $cents = 599): Order
-{
-    $cart = app(CartService::class);
-    $cart->add(sellable($cents));
-
-    $order = app(PlaceOrder::class)(request(), 'buyer@example.com');
-    $order->forceFill(['status' => OrderStatus::Paid, 'paid_at' => now()])->save();
-
-    return $order->refresh();
-}
 
 it('issues one grant per purchased file and emails them', function (): void {
     Notification::fake();

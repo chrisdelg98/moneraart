@@ -1,11 +1,13 @@
 <?php
 
 declare(strict_types=1);
+use App\Actions\Checkout\PlaceOrder;
 use App\Actions\Products\StoreProductFile;
 use App\Enums\OrderStatus;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Product;
+use App\Services\Cart\CartService;
 use Tests\TestCase;
 
 /*
@@ -63,4 +65,16 @@ function sellable(int $cents = 599): Product
     app(StoreProductFile::class)($product, artwork(1200, 1600), 'art.jpg');
 
     return $product->refresh();
+}
+
+/** A paid order ready to be completed. */
+function paidOrder(int $cents = 599): Order
+{
+    $cart = app(CartService::class);
+    $cart->add(sellable($cents));
+
+    $order = app(PlaceOrder::class)(request(), 'buyer@example.com');
+    $order->forceFill(['status' => OrderStatus::Paid, 'paid_at' => now()])->save();
+
+    return $order->refresh();
 }

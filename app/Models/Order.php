@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Carbon;
 
 /**
  * @property OrderStatus $status
@@ -18,6 +19,13 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property int $total_cents
  * @property string $currency
  * @property array<string, mixed>|null $metadata
+ * @property Carbon|null $terms_accepted_at
+ * @property Carbon|null $paid_at
+ * @property Carbon|null $completed_at
+ * @property string|null $terms_version
+ * @property string|null $manual_review_reason
+ * @property string|null $admin_notes
+ * @property bool $is_free
  */
 class Order extends Model
 {
@@ -56,6 +64,12 @@ class Order extends Model
     public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    /** @return HasMany<DownloadGrant, $this> */
+    public function downloadGrants(): HasMany
+    {
+        return $this->hasMany(DownloadGrant::class);
     }
 
     /** @return HasMany<Payment, $this> */
