@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Checkout\FreeCheckoutController;
 use App\Http\Controllers\Checkout\PayPalCheckoutController;
 use App\Http\Controllers\DownloadController;
 use App\Http\Controllers\RenewDownloadController;
@@ -58,6 +59,10 @@ Route::get('/d/{token}', DownloadController::class)
 Route::post('/d/{grant:uuid}/renew', RenewDownloadController::class)
     ->middleware('throttle:3,60')
     ->name('download.renew');
+
+Route::post('/checkout/free', FreeCheckoutController::class)
+    ->middleware('throttle:10,60')
+    ->name('checkout.free');
 
 Route::get('/{slug}', LegalController::class)
     ->whereIn('slug', ['terms', 'privacy', 'refunds', 'how-we-work'])

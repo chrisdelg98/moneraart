@@ -6,6 +6,7 @@ namespace App\Jobs;
 
 use App\Actions\Orders\CompleteOrder;
 use App\Actions\Orders\MarkOrderPaid;
+use App\Actions\Orders\RefundOrder;
 use App\Enums\OrderStatus;
 use App\Models\Order;
 use App\Models\WebhookEvent;
@@ -45,6 +46,7 @@ class ProcessPayPalWebhook implements ShouldQueue
         try {
             $handled = match ($event->event_type) {
                 'PAYMENT.CAPTURE.COMPLETED' => $this->capture($event, $markPaid),
+                'PAYMENT.CAPTURE.REFUNDED', 'PAYMENT.CAPTURE.REVERSED' => $this->refund($event),
                 default => false,
             };
 
@@ -57,6 +59,42 @@ class ProcessPayPalWebhook implements ShouldQueue
 
             throw $e;
         }
+    }
+
+    /** A refund started in PayPal's dashboard still has to take access back. */
+    private function refund(WebhookEvent $event): bool
+    {
+        /** @var array<string, mixed> $resource */
+        $resource = $event->payload['resource'] ?? [];
+
+        $captureId = (string) data_get($resource, 'links.0.href', '');
+        $order = $this->orderFor($resource, $captureId);
+
+        if ($order === null) {
+            return false;
+        }
+
+        app(RefundOrder::class)->fromWebhook($order, $resource);
+
+        return true;
+    }
+
+    /** @param array<string, mixed> $resource */
+    private function orderFor(array $resource, string $captureIdHint): ?Order
+    {
+        $custom = $resource['custom_id'] ?? null;
+
+        if (is_string($custom)) {
+            return Order::where('uuid', $custom)->first();
+        }
+
+        // A refund resource names the capture it reverses, not our order.
+        $captureId = (string) data_get($resource, 'links.1.href', $captureIdHint);
+        preg_match('#/captures/([A-Z0-9]+)#i', $captureId, $m);
+
+        return isset($m[1])
+            ? Order::whereHas('payments', fn ($q) => $q->where('provider_capture_id', $m[1]))->first()
+            : null;
     }
 
     private function capture(WebhookEvent $event, MarkOrderPaid $markPaid): bool

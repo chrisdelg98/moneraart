@@ -6,6 +6,7 @@ namespace App\Filament\Resources\Orders\Pages;
 
 use App\Actions\Downloads\IssueDownloadGrants;
 use App\Actions\Orders\CompleteOrder;
+use App\Actions\Orders\RefundOrder;
 use App\Enums\OrderStatus;
 use App\Filament\Resources\Orders\OrderResource;
 use App\Models\DownloadGrant;
@@ -13,8 +14,10 @@ use App\Models\Order;
 use App\Notifications\DownloadLinksReady;
 use App\Services\Audit\AuditLogger;
 use App\Services\PayPal\PayPalOrderService;
+use App\Support\Money;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Support\Icons\Heroicon;
@@ -43,6 +46,7 @@ class ViewOrder extends ViewRecord
             $this->approveAction(),
             $this->resendAction(),
             $this->reissueAction(),
+            $this->refundAction(),
             $this->revealEmailAction(),
         ];
     }
@@ -157,6 +161,51 @@ class ViewOrder extends ViewRecord
 
                 Notification::make()->title('New links sent')
                     ->body('The previous links no longer work.')->success()->send();
+            });
+    }
+
+    private function refundAction(): Action
+    {
+        return Action::make('refund')
+            ->label('Refund')
+            ->icon(Heroicon::OutlinedReceiptRefund)
+            ->color('danger')
+            ->visible(fn (Order $record): bool => $record->payment?->provider_capture_id !== null
+                && $record->status->canTransitionTo(OrderStatus::Refunded))
+            ->requiresConfirmation()
+            ->modalHeading('Refund this order?')
+            ->modalDescription(fn (Order $record): string => sprintf(
+                'A full refund of %s also revokes the download links we issued.',
+                $record->total()->format(),
+            ))
+            ->schema([
+                TextInput::make('amount')
+                    ->label('Amount')
+                    ->numeric()
+                    ->prefix('$')
+                    ->required()
+                    ->default(fn (Order $record): string => $record->total()->toDecimalString())
+                    ->helperText('Leave as-is for a full refund. A partial one keeps their access.'),
+
+                Textarea::make('reason')
+                    ->label('Reason')
+                    ->required()
+                    ->rows(2)
+                    ->helperText('Shown to the customer by PayPal, and recorded here.'),
+            ])
+            ->action(function (Order $record, array $data): void {
+                try {
+                    app(RefundOrder::class)(
+                        $record,
+                        $data['reason'],
+                        Money::fromDecimal((string) $data['amount'], $record->currency),
+                    );
+
+                    Notification::make()->title('Refunded')->success()->send();
+                } catch (Throwable $e) {
+                    Notification::make()->title('That refund did not go through')
+                        ->body($e->getMessage())->danger()->persistent()->send();
+                }
             });
     }
 

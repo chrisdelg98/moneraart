@@ -6,8 +6,13 @@
 
             {{-- Three fields. Every one we do not collect is one we do not have
                  to encrypt, protect or justify. See §7.2. --}}
-            <form id="checkout-form" class="flex flex-col gap-6" novalidate>
+            <form id="checkout-form" class="flex flex-col gap-6"
+                  @if ($isFree) method="POST" action="{{ route('checkout.free') }}" @else novalidate @endif>
                 @csrf
+
+                @if (session('error'))
+                    <p role="alert" class="border-l-2 border-accent py-2 pl-3 text-sm">{{ session('error') }}</p>
+                @endif
 
                 <div>
                     <label for="email" class="label">Your email</label>
@@ -50,6 +55,15 @@
                     </label>
                 </div>
 
+                @if ($isFree)
+                    {{-- Nothing to charge, so nothing to load: the PayPal SDK
+                         never reaches this page. See §7.6. --}}
+                    <button type="submit"
+                            class="w-full border border-ink bg-ink px-6 py-3.5 text-paper transition-opacity hover:opacity-85">
+                        Get your free art
+                    </button>
+                    <p class="label text-center">No payment needed</p>
+                @else
                 <div class="border-t rule pt-6">
                     <p class="label">Payment</p>
 
@@ -64,6 +78,7 @@
                         </div>
                     @endif
                 </div>
+                @endif
             </form>
 
             <aside class="lg:sticky lg:top-8 lg:self-start" aria-labelledby="summary">
@@ -88,7 +103,7 @@
         </div>
     </div>
 
-    @if ($paypalClientId)
+    @if ($paypalClientId && ! $isFree)
         <x-slot:head>
             {{-- The only third-party script on the storefront, and only on the
                  one page that needs it. --}}

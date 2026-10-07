@@ -32,6 +32,7 @@ class CheckoutController
                 ? $this->paypal->clientId()
                 : null,
             'currency' => (string) config('store.currency', 'USD'),
+            'isFree' => $this->cart->subtotal()->isZero(),
         ]);
     }
 }
