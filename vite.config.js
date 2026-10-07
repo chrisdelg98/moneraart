@@ -6,12 +6,13 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
     plugins: [
         laravel({
-            input: ['resources/css/app.css', 'resources/js/app.js'],
+            // Separate builds: storefront CSS must not carry admin classes.
+            input: ['resources/css/storefront.css', 'resources/js/storefront.js'],
             refresh: true,
             fonts: [
-                bunny('Instrument Sans', {
-                    weights: [400, 500, 600],
-                }),
+                // Two families, four weights. Nothing more. See §12.2.1.
+                bunny('Fraunces', { weights: [400, 600] }),
+                bunny('Inter', { weights: [400, 500] }),
             ],
         }),
         tailwindcss(),

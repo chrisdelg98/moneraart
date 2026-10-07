@@ -2518,6 +2518,25 @@ flushed by the same events.
 A pull request that breaches a budget fails CI. Budgets that are advisory are budgets that are
 ignored.
 
+### 12.6.1 Empty states on the storefront
+
+Two cases a catalog in progress will hit, and both must degrade gracefully
+rather than render broken.
+
+**A product with no artwork** shows a house placeholder rather than a missing
+image: a branded panel in the `Paper` tone carrying the store mark and the
+piece's title, generated once and cached. A broken image icon reads as a broken
+site; a deliberate placeholder reads as a piece not yet photographed.
+
+**A product with no sellable files** cannot be bought. The buy button is
+replaced by a quiet "Not available at the moment" with an option to be notified,
+and the product is excluded from listings and from the sitemap. It stays
+reachable by direct link so an existing inbound link does not 404.
+
+Both conditions are also surfaced in the admin — the product list flags a
+published product missing either one, since that combination is always a
+mistake.
+
 ### 12.7 Search
 
 Search is how people actually shop an art store. A visitor who knows they want *something blue for

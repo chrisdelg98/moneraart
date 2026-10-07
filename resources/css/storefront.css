@@ -1,0 +1,96 @@
+@import 'tailwindcss';
+
+@source '../views/storefront/**/*.blade.php';
+@source '../views/components/**/*.blade.php';
+
+/*
+ * The storefront design system.
+ *
+ * Character comes from typography, colour, scale and layout rhythm — all of it
+ * plain CSS, costing nothing in payload or accessibility. See §12.2.
+ */
+@theme {
+    /* Warm, not white. A gallery is bone and ink, not an office document. */
+    --color-ink: #16140f;
+    --color-paper: #faf7f0;
+    --color-muted: #595751;
+    --color-rule: #e2ddd2;
+    --color-accent: #9a4a2f;
+
+    /* Two families, four weights. The display face carries the identity. */
+    --font-display: 'Fraunces', ui-serif, Georgia, serif;
+    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+
+    /* Scale contrast is where the character lives: a 72px title above an 11px
+       label reads as editorial; the same content at 24/16 reads as a template. */
+    --text-display: 4.5rem;
+    --text-display--line-height: 0.95;
+    --text-display--letter-spacing: -0.02em;
+
+    --text-label: 0.6875rem;
+    --text-label--line-height: 1.2;
+    --text-label--letter-spacing: 0.12em;
+}
+
+@layer base {
+    html {
+        -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+        background-color: var(--color-paper);
+        color: var(--color-ink);
+        font-family: var(--font-sans);
+        font-size: 1rem;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    h1, h2, h3 {
+        font-family: var(--font-display);
+        font-weight: 400;
+        letter-spacing: -0.015em;
+    }
+
+    /* Never outline: none. See §12.4.1. */
+    :focus-visible {
+        outline: 2px solid var(--color-ink);
+        outline-offset: 2px;
+    }
+
+    ::selection {
+        background: var(--color-ink);
+        color: var(--color-paper);
+    }
+}
+
+@layer components {
+    /* Small caps label — the counterpart to the display face. */
+    .label {
+        font-size: var(--text-label);
+        letter-spacing: var(--text-label--letter-spacing);
+        text-transform: uppercase;
+        color: var(--color-muted);
+    }
+
+    /* A hairline does the separating work a drop shadow does, with restraint. */
+    .rule {
+        border-color: var(--color-rule);
+    }
+}
+
+/* Opacity and small translations only, and only when motion is welcome. */
+@media (prefers-reduced-motion: no-preference) {
+    @layer components {
+        .rise {
+            animation: rise 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+    }
+
+    @keyframes rise {
+        from {
+            opacity: 0;
+            transform: translateY(12px);
+        }
+    }
+}
