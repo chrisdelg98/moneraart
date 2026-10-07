@@ -30,7 +30,7 @@
             alt="{{ $image->alt() ?: $title }}"
             width="{{ $image->width }}"
             height="{{ $image->height }}"
-            @class(['h-auto w-full', $attributes->get('class')])
+            @class(['w-full', 'h-auto' => ! str_contains((string) $attributes->get('class'), 'object-cover'), $attributes->get('class')])
             style="background-color: {{ $image->dominant_color ?? '#E2DDD2' }}"
             loading="{{ $eager ? 'eager' : 'lazy' }}"
             fetchpriority="{{ $eager ? 'high' : 'auto' }}"

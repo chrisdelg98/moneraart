@@ -126,3 +126,36 @@
         text-underline-offset: 4px;
     }
 }
+
+@layer components {
+    /* A barely-there wash, not a coloured box: enough to separate the band
+       from the page without competing with the artwork. */
+    .band {
+        background:
+            radial-gradient(120% 140% at 12% 0%,
+                color-mix(in srgb, var(--color-accent) 7%, transparent) 0%,
+                transparent 55%),
+            linear-gradient(180deg,
+                color-mix(in srgb, var(--color-rule) 42%, var(--color-paper)) 0%,
+                var(--color-paper) 100%);
+    }
+
+    .band-footer {
+        background:
+            radial-gradient(90% 120% at 88% 100%,
+                color-mix(in srgb, var(--color-accent) 6%, transparent) 0%,
+                transparent 60%),
+            linear-gradient(0deg,
+                color-mix(in srgb, var(--color-rule) 50%, var(--color-paper)) 0%,
+                var(--color-paper) 100%);
+    }
+
+    /* Information laid over artwork needs its own floor to stay legible,
+       whatever the piece underneath is doing. See §12.4.4. */
+    .overlay-scrim {
+        background: linear-gradient(0deg,
+            color-mix(in srgb, var(--color-ink) 78%, transparent) 0%,
+            color-mix(in srgb, var(--color-ink) 45%, transparent) 42%,
+            transparent 100%);
+    }
+}

@@ -16,25 +16,29 @@
         </ol>
     </nav>
 
-    <div class="mx-auto grid max-w-[1400px] gap-10 px-4 py-10 sm:px-8 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:gap-16">
+    <div class="mx-auto grid max-w-[1400px] gap-10 px-4 py-10 sm:px-8 lg:grid-cols-[auto_minmax(0,1fr)] lg:gap-16">
 
         {{-- The artwork is the argument; it takes most of the first viewport. --}}
         <div class="flex flex-col gap-4">
-            <x-store.artwork
-                :image="$cover"
-                :title="$translation->title"
-                sizes="(max-width: 1024px) 100vw, 55vw"
-                eager
-            />
+            <div class="w-full max-w-[460px] overflow-hidden">
+                <x-store.artwork
+                    :image="$cover"
+                    :title="$translation->title"
+                    sizes="(max-width: 1024px) 100vw, 460px"
+                    class="aspect-[4/5] w-full object-cover"
+                    eager
+                />
+            </div>
 
             @if ($gallery->isNotEmpty())
-                <ul class="grid grid-cols-3 gap-4 sm:grid-cols-4">
+                <ul class="grid w-full max-w-[460px] grid-cols-4 gap-3">
                     @foreach ($gallery as $image)
                         <li>
                             <x-store.artwork
                                 :image="$image"
                                 :title="$translation->title"
-                                sizes="(max-width: 640px) 33vw, 180px"
+                                sizes="110px"
+                                class="aspect-square w-full object-cover"
                             />
                         </li>
                     @endforeach
@@ -42,7 +46,7 @@
             @endif
         </div>
 
-        <div class="flex flex-col gap-8 lg:sticky lg:top-8 lg:self-start">
+        <div class="flex flex-col gap-6 lg:sticky lg:top-8 lg:self-start">
             <x-store.wall-label :product="$product" heading="h1" />
 
             @if ($buyable)

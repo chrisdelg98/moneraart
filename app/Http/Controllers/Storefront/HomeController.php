@@ -20,8 +20,9 @@ class HomeController
             ->get();
 
         return view('storefront.home', [
-            'featured' => $products->first(),
-            'products' => $products->skip(1),
+            // A pair, not one piece filling the page.
+            'featured' => $products->take(2),
+            'products' => $products->skip(2),
         ]);
     }
 }

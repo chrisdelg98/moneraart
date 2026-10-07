@@ -26,11 +26,14 @@
 
     <header class="border-b rule">
         <div class="mx-auto flex max-w-[1400px] items-center justify-between gap-8 px-4 py-5 sm:px-8">
-            <a href="{{ route('home') }}" class="font-display text-xl tracking-tight">
-                {{ \App\Support\Facades\Settings::get('store.name') }}
+            <a href="{{ route('home') }}" class="group">
+                <span class="font-display text-xl tracking-tight">
+                    {{ \App\Support\Facades\Settings::get('store.name') }}
+                </span>
+                <span class="label ml-3 hidden sm:inline">Printable wall art</span>
             </a>
 
-            <nav aria-label="Main" class="flex items-center gap-6 text-sm">
+            <nav aria-label="Main" class="flex items-center gap-7 text-sm">
                 <a href="{{ route('shop') }}" class="hover:text-accent">Shop</a>
 
                 <a href="{{ route('cart') }}" class="flex items-center gap-1.5 hover:text-accent">
@@ -46,9 +49,13 @@
         {{ $slot }}
     </main>
 
-    <footer class="mt-24 border-t rule">
-        <div class="mx-auto max-w-[1400px] px-4 py-12 text-sm sm:px-8">
-            <p class="max-w-prose text-muted">
+    <footer class="band-footer mt-24 border-t rule">
+        <div class="mx-auto max-w-[1400px] px-4 py-14 text-sm sm:px-8">
+            <p class="font-display text-lg text-ink">
+                {{ \App\Support\Facades\Settings::get('store.name') }}
+            </p>
+
+            <p class="mt-2 max-w-prose text-muted">
                 Artwork made with AI, selected and prepared by
                 {{ \App\Support\Facades\Settings::get('store.name') }}.
             </p>

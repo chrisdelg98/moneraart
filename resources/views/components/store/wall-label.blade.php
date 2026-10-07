@@ -79,12 +79,13 @@
     </dl>
     @endunless
 
-    <p @class(["flex items-baseline gap-3", "text-base" => $compact, "text-xl" => ! $compact])>
-        {{-- Price is full-contrast body colour, never "subtle" (§12.4.4). --}}
+    <p @class(["flex items-baseline gap-3 font-display", "text-xl" => $compact, "text-3xl" => ! $compact])>
+        {{-- Full-contrast and in the display face: a price set in the UI sans
+             at body size disappears beside the title (§12.4.4). --}}
         <span>{{ $price->format() }}</span>
 
         @if ($product->isOnSale())
-            <span class="text-sm text-muted line-through">{{ $product->price()->format() }}</span>
+            <span class="font-sans text-sm text-muted line-through">{{ $product->price()->format() }}</span>
             <span class="label text-accent">On sale</span>
         @endif
     </p>
