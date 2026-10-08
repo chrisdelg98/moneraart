@@ -58,6 +58,18 @@ database/*.sqlite
 /bootstrap/cache/*
 !/bootstrap/cache/.gitignore
 
+# Skill packs installed from skills-lock.json, which records each one's
+# source and hash. The lockfile is tracked and the unpacked copies are not,
+# the same bargain as composer.lock and /vendor. The five skills below ship
+# with the project itself and stay; .agents/ is a byte-for-byte mirror.
+/.claude/skills/*
+!/.claude/skills/deploying-to-cloud/
+!/.claude/skills/infer-conventions/
+!/.claude/skills/laravel-best-practices/
+!/.claude/skills/tailwindcss-development/
+!/.claude/skills/testing-best-practices/
+/.agents/
+
 
 # ─────────────────────────────────────────────────────────────────────
 #  LOCAL SERVICES
