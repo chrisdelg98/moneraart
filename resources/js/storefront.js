@@ -13,6 +13,16 @@ function paintCartCount() {
     document.querySelectorAll('[data-cart-count]').forEach((el) => {
         el.textContent = count > 0 ? String(count) : '';
         el.hidden = count === 0;
+
+        // The number is decorative to a screen reader, which reads the link's
+        // label instead, so the count has to go into the label itself.
+        const link = el.closest('a');
+
+        if (link) {
+            link.setAttribute('aria-label', count === 0
+                ? 'Cart, empty'
+                : `Cart, ${count} ${count === 1 ? 'item' : 'items'}`);
+        }
     });
 }
 
@@ -54,3 +64,45 @@ function setUpBackToTop() {
 }
 
 document.addEventListener('DOMContentLoaded', setUpBackToTop);
+
+/**
+ * The cart toast.
+ *
+ * The markup is already in the page; this only takes it away again. Hovering
+ * or focusing holds it open, because a message that vanishes while you are
+ * reading it is worse than no message.
+ */
+function setUpToast() {
+    const toast = document.querySelector('[data-toast]');
+
+    if (!toast) {
+        return;
+    }
+
+    let timer;
+
+    const dismiss = () => {
+        clearTimeout(timer);
+        toast.dataset.leaving = '';
+
+        const done = () => { toast.hidden = true; };
+
+        // transitionend never fires when motion is off, so never wait on it.
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches
+            ? done()
+            : toast.addEventListener('transitionend', done, { once: true });
+    };
+
+    const hold = () => clearTimeout(timer);
+    const resume = () => { timer = setTimeout(dismiss, 4000); };
+
+    toast.querySelector('[data-toast-close]')?.addEventListener('click', dismiss);
+    toast.addEventListener('mouseenter', hold);
+    toast.addEventListener('mouseleave', resume);
+    toast.addEventListener('focusin', hold);
+    toast.addEventListener('focusout', resume);
+
+    timer = setTimeout(dismiss, 6000);
+}
+
+document.addEventListener('DOMContentLoaded', setUpToast);

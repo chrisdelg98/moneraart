@@ -28,9 +28,11 @@ it('adds a product and reports the count', function (): void {
 });
 
 it('sets a readable cookie so the badge needs no request', function (): void {
-    // The HTML stays identical for every anonymous visitor this way. See §7.1.
+    // assertPlainCookie, not assertCookie: the latter decrypts, and would pass
+    // just as happily against a value no browser script can parse. The badge
+    // reads this with a regex. See §7.1.
     $this->post(route('cart.add', sellable()->uuid))
-        ->assertCookie('cart_count', '1')
+        ->assertPlainCookie('cart_count', '1')
         ->assertCookieNotExpired('cart_count');
 });
 
@@ -39,7 +41,8 @@ it('refuses a product that has no files to deliver', function (): void {
 
     $this->from(route('product', $product->translate('en')->slug))
         ->post(route('cart.add', $product->uuid))
-        ->assertSessionHas('error');
+        ->assertRedirect(route('product', $product->translate('en')->slug))
+        ->assertSessionHas('notice.isError', true);
 
     expect($this->cart->count())->toBe(0);
 });
@@ -57,7 +60,9 @@ it('refuses the same artwork twice', function (): void {
     $product = sellable();
 
     $this->post(route('cart.add', $product->uuid));
-    $this->post(route('cart.add', $product->uuid))->assertSessionHas('error');
+    $this->post(route('cart.add', $product->uuid))
+        ->assertSessionHas('notice.text', 'That artwork is already in your cart.')
+        ->assertSessionHas('notice.url', route('cart'));
 
     expect($this->cart->count())->toBe(1);
 });
@@ -143,4 +148,46 @@ it('caps the cart rather than letting it grow without limit', function (): void 
     }
 
     expect($this->cart->count())->toBe(30);
+});
+
+it('tells the visitor an artwork is already in the cart, with a way to see it', function (): void {
+    $product = sellable();
+    $shop = route('shop');
+
+    $this->post(route('cart.add', $product->uuid));
+
+    // The refusal stays on the page it happened on, and the toast carries the
+    // link: without one, "already in your cart" leaves nowhere to go.
+    $this->from($shop)
+        ->post(route('cart.add', $product->uuid))
+        ->assertRedirect($shop);
+
+    $this->followingRedirects()
+        ->from($shop)
+        ->post(route('cart.add', $product->uuid))
+        ->assertOk()
+        ->assertSee('already in your cart')
+        ->assertSee('data-toast', escape: false)
+        ->assertSee(route('cart'), escape: false);
+});
+
+it('repairs a badge cookie that disagrees with the cart', function (): void {
+    // The cookie outliving its value is the ordinary case: it expires, or was
+    // written under a scheme the badge script can no longer read, while the
+    // session still holds the cart. Every page corrects it.
+    //
+    // The cart is seeded through the session rather than by posting to the
+    // cart: CookieJar is a singleton for the whole test, so a queued cookie
+    // from an earlier request rides along on this response and the assertion
+    // passes whether the middleware exists or not.
+    $this->withSession(['cart' => [sellable()->getKey()]])
+        ->withUnencryptedCookie('cart_count', '7')
+        ->get(route('shop'))
+        ->assertPlainCookie('cart_count', '1');
+});
+
+it('leaves the badge cookie alone when it already agrees', function (): void {
+    $this->withUnencryptedCookie('cart_count', '0')
+        ->get(route('shop'))
+        ->assertCookieMissing('cart_count');
 });

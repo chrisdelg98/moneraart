@@ -15,13 +15,18 @@
     </section>
 
     <div class="mx-auto max-w-[1100px] px-4 py-10 sm:px-8">
-        <x-store.checkout-trail :step="1" />
+        {{-- Continue shopping sits here as well as under the summary: arriving
+             straight from "add to cart", the way back out should be in view
+             without scrolling past the whole cart to find it. --}}
+        <div class="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+            <x-store.checkout-trail :step="1" />
 
-        @if (session('status'))
-            <p role="status" class="mt-8 border-l-2 border-accent bg-accent-soft py-3 pl-4 pr-3 text-sm">
-                {{ session('status') }}
-            </p>
-        @endif
+            <a href="{{ route('shop') }}"
+               class="inline-flex items-center gap-2 text-sm text-muted hover:text-ink">
+                <span aria-hidden="true">&larr;</span>
+                Continue shopping
+            </a>
+        </div>
 
         @if ($products->isEmpty())
             <div class="mt-10 border rule px-6 py-16 text-center">

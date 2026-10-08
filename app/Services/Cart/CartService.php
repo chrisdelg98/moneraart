@@ -141,6 +141,9 @@ final class CartService
         // Readable by JavaScript on purpose: the badge is painted from this
         // cookie so the HTML stays identical for every anonymous visitor and
         // the page remains fully CDN-cacheable. See §7.1.
+        //
+        // httpOnly alone is not enough — bootstrap/app.php exempts the name
+        // from cookie encryption as well, or the browser reads ciphertext.
         cookie()->queue(cookie(
             name: 'cart_count',
             value: (string) count($ids),

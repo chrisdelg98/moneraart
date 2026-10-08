@@ -25,16 +25,36 @@ class CartController
     {
         $outcome = $this->cart->add($product);
 
-        // A plain redirect back, so the form works with JavaScript disabled.
+        // A plain redirect, so the form works with JavaScript disabled. A
+        // refusal stays where it happened: sending someone to the cart to be
+        // told nothing was added is a round trip for no reason.
         return $outcome->ok
-            ? redirect()->route('cart')->with('status', 'Added to your cart.')
-            : back()->with('error', $outcome->reason);
+            ? redirect()->route('cart')->with('notice', self::notice('Added to your cart.'))
+            : back()->with('notice', self::notice((string) $outcome->reason, isError: true));
     }
 
     public function remove(Product $product): RedirectResponse
     {
         $this->cart->remove($product);
 
-        return redirect()->route('cart')->with('status', 'Removed from your cart.');
+        return redirect()->route('cart')->with('notice', self::notice('Removed from your cart.'));
+    }
+
+    /**
+     * A transient message for the toast.
+     *
+     * Every cart notice carries a way to the cart, because the one thing
+     * someone wants after "already in your cart" is to go and look at it.
+     *
+     * @return array{text: string, isError: bool, url: string, label: string}
+     */
+    private static function notice(string $text, bool $isError = false): array
+    {
+        return [
+            'text' => $text,
+            'isError' => $isError,
+            'url' => route('cart'),
+            'label' => 'View cart',
+        ];
     }
 }

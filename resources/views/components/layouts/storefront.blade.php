@@ -69,6 +69,8 @@
         </div>
     </header>
 
+    <x-store.toast />
+
     <main id="main" class="relative">
         {{ $slot }}
     </main>

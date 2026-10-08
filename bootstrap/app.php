@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Middleware\SyncCartCountCookie;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -21,7 +22,13 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // The cart badge is painted from this cookie in the browser, so it has
+        // to survive as plain digits. It holds a count and nothing else — no
+        // identifier, no session state, nothing worth encrypting. See §7.1.
+        $middleware->encryptCookies(except: ['cart_count']);
+
+        // Last in the group, so the session is started and the cart readable.
+        $middleware->web(append: [SyncCartCountCookie::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
