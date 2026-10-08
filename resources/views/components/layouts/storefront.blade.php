@@ -80,33 +80,60 @@
         </svg>
     </button>
 
-    <footer class="band-sand mt-20 border-t rule">
-        <div class="mx-auto max-w-[1400px] px-4 py-14 sm:px-8">
-            <div class="flex flex-wrap justify-between gap-10">
+    <footer class="band-footer mt-24 border-t rule">
+        <div class="mx-auto max-w-[1400px] px-4 py-16 sm:px-8">
+            <div class="flex flex-wrap items-start justify-between gap-x-12 gap-y-10">
                 <div>
-                    <p class="font-display text-xl">
+                    <p class="font-display text-3xl tracking-tight sm:text-4xl">
                         {{ \App\Support\Facades\Settings::get('store.name') }}
                     </p>
-                    <p class="label mt-1">Printable wall art</p>
-                    <p class="mt-4 max-w-xs text-sm text-muted">
-                        Art that brings beauty to your space. Made with AI,
-                        selected and prepared by us.
+
+                    <p class="label mt-2">Printable wall art</p>
+
+                    {{-- A short accent rule: the one place the brand colour
+                         appears in the footer, and it anchors the wordmark. --}}
+                    <span class="mt-4 block h-0.5 w-14 bg-accent"></span>
+
+                    <p class="mt-6 max-w-sm font-display text-lg leading-relaxed">
+                        Art that brings beauty to your space.<br>
+                        Made with AI, selected and prepared by us.
                     </p>
                 </div>
 
-                <nav aria-label="Footer" class="flex flex-wrap gap-x-10 gap-y-2 text-sm">
-                    <a href="{{ route('shop') }}" class="text-muted hover:text-ink">Shop</a>
-                    <a href="{{ route('legal', 'how-we-work') }}" class="text-muted hover:text-ink">About</a>
-                    <a href="{{ route('legal', 'terms') }}" class="text-muted hover:text-ink">Terms</a>
-                    <a href="{{ route('legal', 'privacy') }}" class="text-muted hover:text-ink">Privacy</a>
-                    <a href="{{ route('legal', 'refunds') }}" class="text-muted hover:text-ink">Refunds</a>
+                {{-- Aligned with the wordmark's second line rather than its
+                     top, so the two blocks read as one band. --}}
+                <nav aria-label="Footer" class="flex flex-wrap items-center gap-x-4 gap-y-3 text-sm sm:pt-14">
+                    @foreach ([
+                        [route('shop'), 'Shop'],
+                        [route('legal', 'how-we-work'), 'About'],
+                        [route('legal', 'terms'), 'Terms'],
+                        [route('legal', 'privacy'), 'Privacy'],
+                        [route('legal', 'refunds'), 'Refunds'],
+                    ] as $i => [$url, $label])
+                        @if ($i > 0)
+                            <span class="text-rule" aria-hidden="true">|</span>
+                        @endif
+
+                        <a href="{{ $url }}" class="hover:text-accent">{{ $label }}</a>
+                    @endforeach
                 </nav>
             </div>
 
-            <p class="mt-12 border-t rule pt-6 text-sm text-muted">
-                &copy; {{ date('Y') }} {{ \App\Support\Facades\Settings::get('store.name') }}.
-                All rights reserved.
-            </p>
+            <div class="mt-14 flex flex-wrap items-center justify-between gap-4 border-t rule pt-6">
+                <p class="text-sm text-muted">
+                    &copy; {{ date('Y') }} {{ \App\Support\Facades\Settings::get('store.name') }}.
+                    All rights reserved.
+                </p>
+
+                {{-- Decorative, and marked as such: a rule tapering into three
+                     dots closes the page without saying anything. --}}
+                <span class="flex items-center gap-2" aria-hidden="true">
+                    <span class="h-px w-10 bg-rule"></span>
+                    <span class="h-1.5 w-1.5 rounded-full bg-accent"></span>
+                    <span class="h-1.5 w-1.5 rounded-full bg-accent/50"></span>
+                    <span class="h-1.5 w-1.5 rounded-full bg-accent/25"></span>
+                </span>
+            </div>
         </div>
     </footer>
 </body>
