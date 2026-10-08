@@ -11,14 +11,14 @@
              sizes="100vw"
              alt="" width="1672" height="941"
              fetchpriority="high" decoding="sync"
-             class="absolute inset-0 -z-10 h-full w-full object-cover object-right">
+             class="photo-section-image">
 
         {{-- A wash from the left keeps the copy legible whatever the photograph
              is doing behind it, and fades out before reaching the artwork. --}}
-        <div class="absolute inset-0 -z-10 bg-gradient-to-r from-[color-mix(in_srgb,var(--color-paper)_94%,transparent)] from-5% via-[color-mix(in_srgb,var(--color-paper)_70%,transparent)] via-40% to-transparent to-75%"></div>
+        <div class="photo-section-wash"></div>
 
         <div class="mx-auto max-w-[1400px] px-4 py-20 sm:px-8 lg:py-32">
-            <div class="max-w-md">
+            <div class="max-w-md lg:max-w-lg">
                 <p class="label">Art for modern living</p>
 
                 <h1 class="mt-5 text-balance text-5xl leading-[1.05] sm:text-6xl">
@@ -117,13 +117,13 @@
                      /images/steps-1280.webp 1280w,
                      /images/steps-1920.webp 1920w"
              sizes="100vw"
-             alt="" width="1942" height="809" loading="lazy" decoding="async"
-             class="absolute inset-0 -z-10 h-full w-full object-cover object-right">
+             alt="" width="1944" height="809" loading="lazy" decoding="async"
+             class="photo-section-image">
 
-        <div class="absolute inset-0 -z-10 bg-gradient-to-r from-[color-mix(in_srgb,var(--color-paper)_95%,transparent)] from-5% via-[color-mix(in_srgb,var(--color-paper)_72%,transparent)] via-45% to-transparent to-80%"></div>
+        <div class="photo-section-wash"></div>
 
         <div class="mx-auto max-w-[1400px] px-4 py-20 sm:px-8 lg:py-28">
-            <div class="max-w-xl">
+            <div class="max-w-lg lg:max-w-xl">
                 <p class="label">How it works</p>
                 <h2 id="how" class="mt-3 text-balance text-4xl sm:text-5xl">
                     Get your art in 3 simple steps.

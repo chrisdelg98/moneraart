@@ -197,3 +197,83 @@
         background: var(--color-rule);
     }
 }
+
+/*
+ * Photographic sections.
+ *
+ * object-cover crops differently at every width, so the empty wall these
+ * photographs are composed around shrinks as the viewport does and the copy
+ * ends up over the artwork. Two things move together to prevent it: the wash
+ * grows stronger and reaches further right as the screen narrows, and the crop
+ * shifts to keep more wall in frame. On a phone the photograph becomes a faint
+ * texture rather than a competing image.
+ */
+@layer components {
+    .photo-section-image {
+        position: absolute;
+        inset: 0;
+        z-index: -10;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        /* Narrow: favour the wall. The artwork is still partly in frame. */
+        object-position: 72% center;
+    }
+
+    .photo-section-wash {
+        position: absolute;
+        inset: 0;
+        z-index: -10;
+        /* Phone: near-opaque, so the photograph reads as texture and the copy
+           never has to compete with it. */
+        background: linear-gradient(
+            100deg,
+            color-mix(in srgb, var(--color-paper) 96%, transparent) 0%,
+            color-mix(in srgb, var(--color-paper) 93%, transparent) 70%,
+            color-mix(in srgb, var(--color-paper) 76%, transparent) 100%
+        );
+    }
+
+    @media (min-width: 640px) {
+        .photo-section-image {
+            object-position: 80% center;
+        }
+
+        .photo-section-wash {
+            background: linear-gradient(
+                100deg,
+                color-mix(in srgb, var(--color-paper) 95%, transparent) 0%,
+                color-mix(in srgb, var(--color-paper) 90%, transparent) 51%,
+                color-mix(in srgb, var(--color-paper) 45%, transparent) 86%,
+                transparent 100%
+            );
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .photo-section-image {
+            object-position: right center;
+        }
+
+        .photo-section-wash {
+            background: linear-gradient(
+                95deg,
+                color-mix(in srgb, var(--color-paper) 94%, transparent) 0%,
+                color-mix(in srgb, var(--color-paper) 80%, transparent) 39%,
+                color-mix(in srgb, var(--color-paper) 35%, transparent) 64%,
+                transparent 80%
+            );
+        }
+    }
+
+    @media (min-width: 1400px) {
+        .photo-section-wash {
+            background: linear-gradient(
+                95deg,
+                color-mix(in srgb, var(--color-paper) 93%, transparent) 0%,
+                color-mix(in srgb, var(--color-paper) 73%, transparent) 33%,
+                transparent 60%
+            );
+        }
+    }
+}
