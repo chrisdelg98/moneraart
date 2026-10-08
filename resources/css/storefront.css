@@ -1,4 +1,7 @@
-@import 'tailwindcss';
+/* source(none) turns off automatic scanning: the two globs below are the
+   whole storefront, and without it any folder dropped into the project —
+   vendor docs, tooling, editor scratch — lands in the production bundle. */
+@import 'tailwindcss' source(none);
 
 @source '../views/storefront/**/*.blade.php';
 @source '../views/components/**/*.blade.php';
@@ -387,5 +390,41 @@
             background: transparent;
             overflow: visible;
         }
+    }
+}
+
+@layer base {
+    /* Native controls, in the brand's colour rather than the browser's blue. */
+    input[type='checkbox'],
+    input[type='radio'] {
+        accent-color: var(--color-accent);
+    }
+}
+
+@layer components {
+    /*
+     * Form fields. Checkout asks for one thing that matters, so the field it
+     * asks in should look deliberate: paper on a hairline, darkening on hover
+     * so it reads as something you can type into.
+     */
+    .field {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        color: var(--color-ink);
+        background: var(--color-paper);
+        border: 1px solid var(--color-rule);
+        transition: border-color 160ms ease;
+    }
+
+    .field::placeholder {
+        color: color-mix(in srgb, var(--color-muted) 65%, transparent);
+    }
+
+    .field:hover {
+        border-color: color-mix(in srgb, var(--color-ink) 30%, var(--color-rule));
+    }
+
+    .field:focus {
+        border-color: var(--color-ink);
     }
 }

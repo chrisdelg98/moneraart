@@ -39,17 +39,25 @@
     </picture>
 @else
     <div
-        {{ $attributes->class(['flex aspect-[4/5] w-full flex-col items-center justify-center gap-3 border rule bg-[color-mix(in_srgb,var(--color-rule)_35%,var(--color-paper))] p-6 text-center']) }}
+        {{ $attributes->class([
+            '@container flex w-full flex-col items-center justify-center gap-3 overflow-hidden border rule bg-[color-mix(in_srgb,var(--color-rule)_35%,var(--color-paper))] p-4 text-center',
+            // Only when the caller has not fixed a frame of its own, or the two
+            // ratios fight and the card stops matching its neighbours.
+            'aspect-[4/5]' => ! str_contains((string) $attributes->get('class'), 'aspect-'),
+        ]) }}
         role="img"
         aria-label="{{ $title ? $title.' — artwork coming soon' : 'Artwork coming soon' }}"
     >
-        <svg class="h-8 w-8 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        {{-- Sized against the box, not the viewport: this same placeholder
+             stands in for a 320px card and a 56px line in the order summary. --}}
+        <svg class="h-6 w-6 shrink-0 text-muted @min-[12rem]:h-8 @min-[12rem]:w-8"
+             viewBox="0 0 24 24" fill="none" stroke="currentColor"
              stroke-width="1.25" aria-hidden="true">
             <rect x="3" y="3" width="18" height="18" rx="1" />
             <path d="m3 16 5-5 4 4 3-3 6 6" />
             <circle cx="9" cy="8.5" r="1.25" />
         </svg>
 
-        <span class="label">Coming soon</span>
+        <span class="label hidden @min-[9rem]:block">Coming soon</span>
     </div>
 @endif

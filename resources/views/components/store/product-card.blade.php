@@ -16,7 +16,7 @@
     <div class="relative overflow-hidden">
         <x-store.artwork :image="$product->coverImage" :title="$t->title"
                          sizes="(max-width: 359px) 100vw, (max-width: 767px) 50vw, (max-width: 1279px) 33vw, 320px"
-                         class="aspect-[5/4] w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
+                         class="aspect-5/4 w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
     </div>
 
     <div class="flex flex-1 flex-col p-3 sm:p-4">
@@ -46,7 +46,7 @@
                 <form method="POST" action="{{ route('cart.add', $product->uuid) }}" class="relative z-10 shrink-0">
                     @csrf
                     <button type="submit"
-                            class="flex h-10 w-10 items-center justify-center border rule text-accent transition-colors hover:bg-[var(--color-accent-soft)]"
+                            class="flex h-10 w-10 items-center justify-center border rule text-accent transition-colors hover:bg-accent-soft"
                             aria-label="Add {{ $t->title }} to cart">
                         <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                              stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
