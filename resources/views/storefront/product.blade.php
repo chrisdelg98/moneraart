@@ -49,7 +49,34 @@
         <div class="flex flex-col gap-6 lg:sticky lg:top-8 lg:self-start">
             <x-store.wall-label :product="$product" heading="h1" />
 
-            @if ($buyable)
+            @if ($buyable && $inCart)
+                {{-- Already held. Offering "add to cart" again only leads to a
+                     refusal, so the page offers the two things that are left:
+                     go and pay, or take it back out. --}}
+                <div class="flex flex-col gap-3">
+                    <p class="flex items-center gap-2.5 border rule bg-accent-soft px-5 py-4 text-sm">
+                        <svg class="h-5 w-5 shrink-0 text-accent" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                             stroke-linejoin="round" aria-hidden="true">
+                            <circle cx="12" cy="12" r="9" /><path d="m8.5 12.5 2.5 2.5 4.5-5" />
+                        </svg>
+                        In your cart
+                    </p>
+
+                    <a href="{{ route('cart') }}" class="btn-accent px-6 py-3.5 text-center">
+                        View cart &mdash; {{ $product->effectivePrice()->format() }}
+                    </a>
+
+                    <form method="POST" action="{{ route('cart.remove', $product->uuid) }}">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit"
+                                class="w-full py-1 text-sm text-muted underline underline-offset-4 hover:text-accent">
+                            Remove from cart
+                        </button>
+                    </form>
+                </div>
+            @elseif ($buyable)
                 <form method="POST" action="{{ route('cart.add', $product->uuid) }}" class="flex flex-col gap-3">
                     @csrf
 

@@ -7,11 +7,14 @@ namespace App\Http\Controllers\Storefront;
 use App\Enums\ProductStatus;
 use App\Models\Product;
 use App\Models\ProductTranslation;
+use App\Services\Cart\CartService;
 use Illuminate\View\View;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class ProductController
 {
+    public function __construct(private readonly CartService $cart) {}
+
     public function __invoke(string $slug): View
     {
         $locale = app()->getLocale();
@@ -48,6 +51,10 @@ class ProductController
             'product' => $product,
             'translation' => $translation,
             'related' => $related,
+            // The one page that states cart membership. It costs this page the
+            // byte-identical HTML the catalogue keeps for caching, which is
+            // the trade for a buy button that knows what it already holds.
+            'inCart' => $this->cart->has($product),
         ]);
     }
 }

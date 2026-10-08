@@ -27,12 +27,13 @@
         <div class="min-w-0 flex-1">
             <p class="text-sm leading-snug">{{ $notice['text'] }}</p>
 
-            @isset($notice['url'])
+            {{-- "View cart" is noise when the cart is what you are reading. --}}
+            @if (isset($notice['url']) && ! request()->routeIs('cart'))
                 <a href="{{ $notice['url'] }}"
                    class="mt-1 inline-block text-sm text-accent underline underline-offset-4">
                     {{ $notice['label'] ?? 'View cart' }}
                 </a>
-            @endisset
+            @endif
         </div>
 
         <button type="button" data-toast-close

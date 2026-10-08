@@ -20,8 +20,13 @@ beforeEach(function (): void {
 
 it('adds a product and reports the count', function (): void {
     $product = sellable();
+    $shop = route('shop');
 
-    $this->post(route('cart.add', $product->uuid))->assertRedirect(route('cart'));
+    // Back to the grid, not off to the cart: adding one piece is rarely the
+    // end of the browsing. The toast carries the way to the cart instead.
+    $this->from($shop)
+        ->post(route('cart.add', $product->uuid))
+        ->assertRedirect($shop);
 
     expect($this->cart->count())->toBe(1)
         ->and($this->cart->has($product))->toBeTrue();
@@ -71,7 +76,9 @@ it('removes a product', function (): void {
     $product = sellable();
     $this->post(route('cart.add', $product->uuid));
 
-    $this->delete(route('cart.remove', $product->uuid))->assertRedirect(route('cart'));
+    $this->from(route('cart'))
+        ->delete(route('cart.remove', $product->uuid))
+        ->assertRedirect(route('cart'));
 
     expect($this->cart->count())->toBe(0);
 });
@@ -190,4 +197,32 @@ it('leaves the badge cookie alone when it already agrees', function (): void {
     $this->withUnencryptedCookie('cart_count', '0')
         ->get(route('shop'))
         ->assertCookieMissing('cart_count');
+});
+
+it('offers to remove a piece the product page already holds', function (): void {
+    $product = sellable();
+    $url = route('product', $product->translate('en')->slug);
+
+    $this->get($url)->assertOk()->assertSee('Add to cart');
+
+    $this->from($url)->post(route('cart.add', $product->uuid));
+
+    $this->get($url)->assertOk()
+        ->assertSee('In your cart')
+        ->assertSee(route('cart.remove', $product->uuid), escape: false)
+        ->assertDontSee('Add to cart');
+});
+
+it('drops the view cart link from a notice shown on the cart itself', function (): void {
+    $product = sellable();
+
+    $this->from(route('shop'))->post(route('cart.add', $product->uuid));
+
+    // Removing happens on the cart page, where "view cart" points at nothing.
+    $this->followingRedirects()
+        ->from(route('cart'))
+        ->delete(route('cart.remove', $product->uuid))
+        ->assertOk()
+        ->assertSee('Removed from your cart')
+        ->assertDontSee('View cart');
 });
