@@ -69,9 +69,16 @@
         </div>
     </header>
 
-    <main id="main">
+    <main id="main" class="relative">
         {{ $slot }}
     </main>
+
+    <button type="button" id="to-top" class="to-top" hidden aria-label="Back to top">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 19V6m0 0-6 6m6-6 6 6" />
+        </svg>
+    </button>
 
     <footer class="band-sand mt-20 border-t rule">
         <div class="mx-auto max-w-[1400px] px-4 py-14 sm:px-8">
