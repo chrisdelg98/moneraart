@@ -332,3 +332,60 @@
         }
     }
 }
+
+@layer components {
+    /*
+     * The filter panel. Below the catalogue's two-column breakpoint it is a
+     * modal drawer, because a stacked list of facets pushes the artwork off
+     * the screen entirely — the one thing the page exists to show.
+     *
+     * A native <dialog> rather than a div: Escape, the focus trap and the
+     * inert background all come for free and all behave the way the platform
+     * does elsewhere.
+     */
+    .filter-panel {
+        width: min(21rem, 88vw);
+        max-width: none;
+        height: 100%;
+        max-height: 100%;
+        /* Pinned left, so the drawer opens from the side the filters live on. */
+        margin: 0 auto 0 0;
+        padding: 0;
+        color: var(--color-ink);
+        background: var(--color-paper);
+        border: 0;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+
+    .filter-panel::backdrop {
+        background: color-mix(in srgb, var(--color-ink) 45%, transparent);
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+        .filter-panel[open] {
+            animation: slide-in 220ms ease both;
+        }
+    }
+
+    @keyframes slide-in {
+        from {
+            transform: translateX(-100%);
+        }
+    }
+
+    /* From here the catalogue has room for a column of its own, so the panel
+       stops being a dialog and becomes the sidebar it always wanted to be. */
+    @media (min-width: 1024px) {
+        .filter-panel {
+            display: block;
+            position: static;
+            width: auto;
+            height: auto;
+            max-height: none;
+            margin: 0;
+            background: transparent;
+            overflow: visible;
+        }
+    }
+}

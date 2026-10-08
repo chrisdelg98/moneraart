@@ -25,41 +25,82 @@
         @else
             <div class="grid gap-10 lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-12">
 
-                {{-- Filters apply as you type or tick. No Apply button: a filter
-                     you have to confirm is a filter most people abandon. --}}
-                <form id="filters" class="lg:sticky lg:top-8 lg:self-start" role="search"
-                      aria-label="Filter artwork" onsubmit="return false">
-                    <label for="q" class="label">Search</label>
-                    <input type="search" id="q" name="q" autocomplete="off"
-                           placeholder="coffee bar, retro…"
-                           class="mt-2 w-full border rule bg-transparent px-3 py-2 text-sm">
+                {{-- A sidebar on a wide screen, a drawer on a narrow one. Stacked
+                     above the grid it pushes every artwork off the screen. --}}
+                <dialog id="filter-panel" class="filter-panel lg:sticky lg:top-8 lg:self-start"
+                        aria-label="Filter artwork">
 
-                    @foreach ($facets as $key => $values)
-                        <fieldset class="mt-7 border-t rule pt-4">
-                            <legend class="label">{{ Str::headline($key) }}</legend>
+                    {{-- Filters apply as you type or tick. No Apply button: a filter
+                         you have to confirm is a filter most people abandon. --}}
+                    <form id="filters" role="search" aria-label="Filter artwork" onsubmit="return false">
+                        <div class="sticky top-0 z-10 flex items-center justify-between border-b rule bg-paper px-5 py-4 lg:hidden">
+                            <p class="font-display text-lg">Filters</p>
 
-                            <div class="mt-3 space-y-1.5">
-                                @foreach ($values as $value)
-                                    <label class="flex cursor-pointer items-center gap-2 text-sm">
-                                        <input type="checkbox" data-facet="{{ $key }}"
-                                               value="{{ $value->value }}" class="shrink-0">
-                                        <span>{{ $value->label() }}</span>
-                                    </label>
-                                @endforeach
-                            </div>
-                        </fieldset>
-                    @endforeach
+                            <button type="button" id="filter-close"
+                                    class="-mr-2 flex h-10 w-10 items-center justify-center text-muted hover:text-ink"
+                                    aria-label="Close filters">
+                                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                     stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+                                    <path d="m6 6 12 12M18 6 6 18" />
+                                </svg>
+                            </button>
+                        </div>
 
-                    <button type="button" id="clear-filters"
-                            class="mt-7 text-sm text-muted underline underline-offset-4 hover:text-ink">
-                        Clear all
-                    </button>
-                </form>
+                        <div class="p-5 lg:p-0">
+                            <label for="q" class="label">Search</label>
+                            <input type="search" id="q" name="q" autocomplete="off"
+                                   placeholder="coffee bar, retro&hellip;"
+                                   class="mt-2 w-full border rule bg-transparent px-3 py-2 text-sm">
+
+                            @foreach ($facets as $key => $values)
+                                <fieldset class="mt-7 border-t rule pt-4">
+                                    <legend class="label">{{ Str::headline($key) }}</legend>
+
+                                    <div class="mt-3 space-y-1.5">
+                                        @foreach ($values as $value)
+                                            <label class="flex cursor-pointer items-center gap-2 py-1 text-sm">
+                                                <input type="checkbox" data-facet="{{ $key }}"
+                                                       value="{{ $value->value }}" class="shrink-0">
+                                                <span>{{ $value->label() }}</span>
+                                            </label>
+                                        @endforeach
+                                    </div>
+                                </fieldset>
+                            @endforeach
+
+                            <button type="button" id="clear-filters"
+                                    class="mt-7 text-sm text-muted underline underline-offset-4 hover:text-ink">
+                                Clear all
+                            </button>
+                        </div>
+
+                        {{-- The grid sits behind the backdrop while the drawer is
+                             open, so the result count comes to the visitor. --}}
+                        <div class="sticky bottom-0 border-t rule bg-paper p-4 lg:hidden">
+                            <button type="button" id="filter-done" class="btn-accent w-full px-6 py-3">
+                                Show {{ $products->count() }} {{ Str::plural('artwork', $products->count()) }}
+                            </button>
+                        </div>
+                    </form>
+                </dialog>
 
                 <div>
-                    <p id="result-count" role="status" aria-live="polite" class="label">
-                        {{ $products->count() }} {{ Str::plural('artwork', $products->count()) }}
-                    </p>
+                    <div class="flex items-center justify-between gap-4">
+                        <button type="button" id="filter-toggle" hidden aria-expanded="false" aria-controls="filter-panel"
+                                class="flex items-center gap-2 border rule px-4 py-2 text-sm transition-colors hover:border-ink lg:hidden">
+                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                 stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+                                <path d="M4 7h16M7 12h10M10 17h4" />
+                            </svg>
+                            Filters
+                            <span id="filter-count" hidden
+                                  class="ml-1 min-w-5 rounded-full bg-accent px-1.5 text-xs leading-5 text-paper"></span>
+                        </button>
+
+                        <p id="result-count" role="status" aria-live="polite" class="label">
+                            {{ $products->count() }} {{ Str::plural('artwork', $products->count()) }}
+                        </p>
+                    </div>
 
                     <ul id="grid" class="mt-6 grid gap-x-6 gap-y-10 sm:grid-cols-2 xl:grid-cols-3">
                         @foreach ($all as $row)
@@ -92,6 +133,18 @@
             const empty = document.getElementById('no-results');
             const search = document.getElementById('q');
 
+            const panel = document.getElementById('filter-panel');
+            const toggle = document.getElementById('filter-toggle');
+            const badge = document.getElementById('filter-count');
+            const done = document.getElementById('filter-done');
+            const sidebar = matchMedia('(min-width: 1024px)');
+
+            // The drawer needs this script to open, so the button only exists
+            // once the script is running.
+            toggle.hidden = false;
+
+            const label = (n) => n + (n === 1 ? ' artwork' : ' artworks');
+
             const apply = () => {
                 const term = search.value.trim().toLowerCase();
                 const picked = {};
@@ -112,8 +165,13 @@
                     if (matches) shown++;
                 }
 
-                count.textContent = `${shown} ${shown === 1 ? 'artwork' : 'artworks'}`;
+                count.textContent = label(shown);
                 empty.hidden = shown !== 0;
+                done.textContent = 'Show ' + label(shown);
+
+                const active = Object.values(picked).reduce((n, v) => n + v.length, 0);
+                badge.textContent = active;
+                badge.hidden = active === 0;
             };
 
             const clear = () => {
@@ -133,6 +191,22 @@
             form.addEventListener('change', apply);
             document.getElementById('clear-filters').addEventListener('click', clear);
             document.getElementById('clear-inline')?.addEventListener('click', clear);
+
+            // The drawer. Escape, the focus trap and the inert background all
+            // come from <dialog> itself.
+            toggle.addEventListener('click', () => {
+                panel.showModal();
+                toggle.setAttribute('aria-expanded', 'true');
+            });
+
+            panel.addEventListener('close', () => toggle.setAttribute('aria-expanded', 'false'));
+            panel.addEventListener('click', (e) => { if (e.target === panel) panel.close(); });
+            document.getElementById('filter-close').addEventListener('click', () => panel.close());
+            done.addEventListener('click', () => panel.close());
+
+            // Widening the window turns the drawer back into a sidebar, and a
+            // modal left open would keep the page inert behind it.
+            sidebar.addEventListener('change', (e) => { if (e.matches && panel.open) panel.close(); });
         })();
     </script>
 </x-layouts.storefront>
