@@ -54,7 +54,7 @@
                 </a>
             </div>
 
-            <ul class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            <ul class="mt-10 grid grid-cols-2 gap-4 max-[359px]:grid-cols-1 sm:gap-5 lg:grid-cols-4">
                 @foreach ($products as $product)
                     <li>
                         <x-store.product-card :product="$product" />

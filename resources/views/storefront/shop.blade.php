@@ -102,7 +102,8 @@
                         </p>
                     </div>
 
-                    <ul id="grid" class="mt-6 grid gap-x-6 gap-y-10 sm:grid-cols-2 xl:grid-cols-3">
+                    <ul id="grid"
+                        class="mt-6 grid grid-cols-2 gap-x-4 gap-y-8 max-[359px]:grid-cols-1 sm:gap-x-6 sm:gap-y-10 md:grid-cols-3">
                         @foreach ($all as $row)
                             <li data-card
                                 data-title="{{ Str::lower($row['t']->title.' '.$row['t']->subtitle) }}"
