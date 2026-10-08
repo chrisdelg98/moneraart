@@ -1,127 +1,155 @@
 <x-layouts.storefront>
-    {{-- Its own band, set apart by a wash rather than a border. --}}
-    <section class="band border-b rule">
-        <div class="mx-auto flex max-w-[1400px] flex-wrap items-baseline justify-between gap-x-10 gap-y-3 px-4 py-12 sm:px-8 lg:py-16">
-            <h1 class="text-balance text-4xl sm:text-5xl">Printable art, yours in seconds.</h1>
-            <p class="text-muted">Chosen and prepared for print. No account, no waiting.</p>
+    {{-- The photograph is the section, not a block inside it. It is composed
+         with empty wall on the left precisely so the copy can live there. --}}
+    <section class="relative isolate overflow-hidden">
+        {{-- Decorative: the copy above it says everything this photograph
+             says, so it carries an empty alt rather than describing furniture. --}}
+        <img src="/images/hero-1200.webp"
+             srcset="/images/hero-800.webp 800w,
+                     /images/hero-1200.webp 1200w,
+                     /images/hero-1672.webp 1672w"
+             sizes="100vw"
+             alt="" width="1672" height="941"
+             fetchpriority="high" decoding="sync"
+             class="absolute inset-0 -z-10 h-full w-full object-cover object-right">
+
+        {{-- A wash from the left keeps the copy legible whatever the photograph
+             is doing behind it, and fades out before reaching the artwork. --}}
+        <div class="absolute inset-0 -z-10 bg-gradient-to-r from-[color-mix(in_srgb,var(--color-paper)_94%,transparent)] from-5% via-[color-mix(in_srgb,var(--color-paper)_70%,transparent)] via-40% to-transparent to-75%"></div>
+
+        <div class="mx-auto max-w-[1400px] px-4 py-20 sm:px-8 lg:py-32">
+            <div class="max-w-md">
+                <p class="label">Art for modern living</p>
+
+                <h1 class="mt-5 text-balance text-5xl leading-[1.05] sm:text-6xl">
+                    Printable art<br>
+                    <span class="text-accent">yours in seconds.</span>
+                </h1>
+
+                <p class="mt-6 text-lg text-muted">
+                    Curated wall art to transform your space. Instant download,
+                    no account, no waiting.
+                </p>
+
+                <a href="{{ route('shop') }}"
+                   class="btn-accent mt-8 inline-flex items-center gap-3 px-7 py-3.5">
+                    Shop collection
+                    <span aria-hidden="true">→</span>
+                </a>
+            </div>
         </div>
     </section>
 
-    @if ($featured->isNotEmpty())
-        <section class="mx-auto mt-12 max-w-[1400px] px-4 sm:px-8" aria-labelledby="featured">
-            <h2 id="featured" class="sr-only">Featured artwork</h2>
-
-            {{-- A pair rather than one piece filling the viewport, with the
-                 information sitting on the artwork instead of beside it. --}}
-            <ul class="grid gap-6 sm:grid-cols-2">
-                @foreach ($featured as $product)
-                    @php $t = $product->translate(); @endphp
-                    <li>
-                        <a href="{{ route('product', $t->slug) }}"
-                           class="group relative block overflow-hidden">
-                            <x-store.artwork :image="$product->coverImage" :title="$t->title"
-                                             sizes="(max-width: 640px) 100vw, 46vw"
-                                             class="aspect-[5/4] w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
-                                             eager />
-
-                            {{-- Text over artwork needs its own floor, whatever
-                                 the piece underneath is doing (§12.4.4). --}}
-                            <div class="overlay-scrim pointer-events-none absolute inset-x-0 bottom-0 p-6 sm:p-7">
-                                <p class="label text-paper/70">{{ $loop->first ? 'Featured' : 'Also new' }}</p>
-
-                                <h3 class="mt-2 text-balance font-display text-2xl leading-tight text-paper sm:text-3xl">
-                                    {{ $t->title }}
-                                </h3>
-
-                                <p class="mt-3 flex items-baseline gap-3">
-                                    <span class="font-display text-2xl text-paper">
-                                        {{ $product->effectivePrice()->format() }}
-                                    </span>
-
-                                    @if ($product->isOnSale())
-                                        <span class="text-sm text-paper/60 line-through">
-                                            {{ $product->price()->format() }}
-                                        </span>
-                                    @endif
-                                </p>
-                            </div>
-                        </a>
-                    </li>
-                @endforeach
-            </ul>
-        </section>
-    @endif
-
-    {{-- One line, three facts, each with its own mark. --}}
-    <section class="mx-auto mt-12 max-w-[1400px] px-4 sm:px-8" aria-label="What to expect">
-        <ul class="grid gap-6 border-y rule py-7 sm:grid-cols-3 sm:gap-10">
-            <li class="flex items-start gap-3">
-                <svg class="mt-0.5 h-5 w-5 shrink-0 text-accent" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="1.4" stroke-linecap="round"
-                     stroke-linejoin="round" aria-hidden="true">
-                    <path d="M12 3v12m0 0 4-4m-4 4-4-4" />
-                    <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
-                </svg>
-                <span class="text-sm">
-                    <span class="label block">Delivery</span>
-                    <span class="mt-0.5 block text-muted">Instant download, straight to your inbox</span>
-                </span>
-            </li>
-
-            <li class="flex items-start gap-3">
-                <svg class="mt-0.5 h-5 w-5 shrink-0 text-accent" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="1.4" stroke-linecap="round"
-                     stroke-linejoin="round" aria-hidden="true">
-                    <rect x="3" y="6" width="18" height="12" rx="1.5" />
-                    <path d="m3.5 7 8.5 6 8.5-6" />
-                </svg>
-                <span class="text-sm">
-                    <span class="label block">Account</span>
-                    <span class="mt-0.5 block text-muted">Not needed — an email address is all we ask</span>
-                </span>
-            </li>
-
-            <li class="flex items-start gap-3">
-                <svg class="mt-0.5 h-5 w-5 shrink-0 text-accent" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="1.4" stroke-linecap="round"
-                     stroke-linejoin="round" aria-hidden="true">
-                    <path d="M12 3.5 13.8 9l5.7.2-4.5 3.5 1.6 5.5-4.6-3.2-4.6 3.2 1.6-5.5L4.5 9.2 10.2 9z" />
-                </svg>
-                <span class="text-sm">
-                    <span class="label block">Medium</span>
-                    <span class="mt-0.5 block text-muted">
-                        Made with AI, curated by us ·
-                        <a href="{{ route('legal', 'how-we-work') }}"
-                           class="underline underline-offset-4 hover:text-ink">How we work</a>
-                    </span>
-                </span>
-            </li>
-        </ul>
-    </section>
-
     @if ($products->isNotEmpty())
-        <section class="mx-auto mt-14 max-w-[1400px] px-4 sm:px-8" aria-labelledby="recent">
-            <div class="flex items-baseline justify-between gap-6">
-                <h2 id="recent" class="text-2xl">New arrivals</h2>
-                <a href="{{ route('shop') }}" class="label hover:text-ink">See all →</a>
+        <section class="mx-auto max-w-[1400px] px-4 py-16 sm:px-8" aria-labelledby="arrivals">
+            <div class="flex items-end justify-between gap-6">
+                <div>
+                    <p class="label">Explore</p>
+                    <h2 id="arrivals" class="mt-2 text-4xl">New arrivals</h2>
+                </div>
+
+                <a href="{{ route('shop') }}"
+                   class="flex shrink-0 items-center gap-2 text-sm text-accent hover:underline hover:underline-offset-4">
+                    See all <span aria-hidden="true">→</span>
+                </a>
             </div>
 
-            <ul class="mt-8 grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
-                @foreach ($products as $i => $product)
-                    @php $t = $product->translate(); @endphp
+            <ul class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                @foreach ($products as $product)
                     <li>
-                        <a href="{{ route('product', $t->slug) }}" class="group block">
-                            <div class="overflow-hidden">
-                                <x-store.artwork :image="$product->coverImage" :title="$t->title"
-                                                 sizes="(max-width: 640px) 100vw, 420px"
-                                                 class="aspect-[4/5] w-full object-cover transition-opacity group-hover:opacity-90" />
-                            </div>
-                            <x-store.wall-label :product="$product" :index="$i + 3" heading="h3"
-                                                compact class="mt-4" />
-                        </a>
+                        <x-store.product-card :product="$product" />
                     </li>
                 @endforeach
             </ul>
         </section>
     @endif
+
+    @if ($styles->isNotEmpty())
+        {{-- A sand band so the section reads as its own without a heading rule. --}}
+        <section class="band-sand" aria-labelledby="collections">
+            <div class="mx-auto grid max-w-[1400px] items-center gap-10 px-4 py-16 sm:px-8 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:gap-14">
+                <div>
+                    <p class="label">Curated collections</p>
+
+                    <h2 id="collections" class="mt-3 text-balance text-4xl leading-tight sm:text-5xl">
+                        Find the style for your space.
+                    </h2>
+
+                    <p class="mt-5 max-w-xs text-muted">
+                        Timeless designs for every room, from modern to classic.
+                    </p>
+
+                    <a href="{{ route('shop') }}"
+                       class="btn-accent mt-7 inline-flex items-center gap-3 px-6 py-3">
+                        Browse all collections
+                        <span aria-hidden="true">→</span>
+                    </a>
+                </div>
+
+                <ul class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+                    @foreach ($styles as $style)
+                        <li>
+                            <a href="{{ route('shop') }}?style={{ $style->value }}"
+                               class="group relative block aspect-[3/4] overflow-hidden">
+                                @php $tile = $style->products()->with('coverImage')->first(); @endphp
+
+                                <x-store.artwork :image="$tile?->coverImage" :title="$style->label()"
+                                                 sizes="(max-width: 1024px) 50vw, 260px"
+                                                 class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" />
+
+                                <div class="overlay-scrim pointer-events-none absolute inset-x-0 bottom-0 p-4">
+                                    <p class="font-display text-lg text-paper">{{ $style->label() }}</p>
+                                    <p class="mt-1 text-sm text-paper/70">Explore →</p>
+                                </div>
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+        </section>
+    @endif
+
+    {{-- Like the hero: the photograph is the section. Panoramic, with the
+         empty wall on the left carrying the copy. --}}
+    <section class="relative isolate overflow-hidden" aria-labelledby="how">
+        <img src="/images/steps-1280.webp"
+             srcset="/images/steps-860.webp 860w,
+                     /images/steps-1280.webp 1280w,
+                     /images/steps-1920.webp 1920w"
+             sizes="100vw"
+             alt="" width="1942" height="809" loading="lazy" decoding="async"
+             class="absolute inset-0 -z-10 h-full w-full object-cover object-right">
+
+        <div class="absolute inset-0 -z-10 bg-gradient-to-r from-[color-mix(in_srgb,var(--color-paper)_95%,transparent)] from-5% via-[color-mix(in_srgb,var(--color-paper)_72%,transparent)] via-45% to-transparent to-80%"></div>
+
+        <div class="mx-auto max-w-[1400px] px-4 py-20 sm:px-8 lg:py-28">
+            <div class="max-w-xl">
+                <p class="label">How it works</p>
+                <h2 id="how" class="mt-3 text-balance text-4xl sm:text-5xl">
+                    Get your art in 3 simple steps.
+                </h2>
+
+                <ol class="steps relative mt-12 grid gap-10 sm:grid-cols-3 sm:gap-6">
+                    @foreach ([
+                        ['Choose', 'Browse and buy the piece you want.', 'M6 6h15l-1.5 9h-12z M6 6 5 3H2 M9 20a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z M18 20a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z'],
+                        ['Download', 'Your print-ready files arrive at once.', 'M12 3v12m0 0 4-4m-4 4-4-4 M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2'],
+                        ['Print & enjoy', 'Print at home or at your print shop.', 'M4 5h16v14H4z M4 14l5-5 4 4 3-3 4 4 M9 9.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z'],
+                    ] as $i => [$title, $copy, $path])
+                        <li class="relative text-center sm:text-left">
+                            <span class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[var(--color-accent-soft)] sm:mx-0">
+                                <svg class="h-6 w-6 text-accent" viewBox="0 0 24 24" fill="none"
+                                     stroke="currentColor" stroke-width="1.4" stroke-linecap="round"
+                                     stroke-linejoin="round" aria-hidden="true">
+                                    <path d="{{ $path }}" />
+                                </svg>
+                            </span>
+
+                            <p class="mt-4 font-medium">{{ $i + 1 }}. {{ $title }}</p>
+                            <p class="mt-1 text-sm text-muted">{{ $copy }}</p>
+                        </li>
+                    @endforeach
+                </ol>
+            </div>
+        </div>
+    </section>
 </x-layouts.storefront>

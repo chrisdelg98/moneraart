@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Storefront;
 
+use App\Models\Attribute;
 use App\Models\Product;
 use Illuminate\View\View;
 
@@ -19,10 +20,15 @@ class HomeController
             ->take(12)
             ->get();
 
+        $styleAttribute = Attribute::with(['values' => fn ($q) => $q->with('translations')->limit(4)])
+            ->where('key', 'style')
+            ->first();
+
+        $styles = $styleAttribute !== null ? $styleAttribute->values : collect();
+
         return view('storefront.home', [
-            // A pair, not one piece filling the page.
-            'featured' => $products->take(2),
-            'products' => $products->skip(2),
+            'styles' => $styles,
+            'products' => $products->take(4),
         ]);
     }
 }

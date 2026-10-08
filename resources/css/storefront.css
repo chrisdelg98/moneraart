@@ -15,7 +15,9 @@
     --color-paper: #faf7f0;
     --color-muted: #595751;
     --color-rule: #e2ddd2;
-    --color-accent: #9a4a2f;
+    --color-accent: #b4552e;
+    --color-accent-soft: #f3ece3;
+    --color-sand: #f1e9df;
 
     /* Two families, four weights. The display face carries the identity. */
     --font-display: 'Fraunces', ui-serif, Georgia, serif;
@@ -157,5 +159,41 @@
             color-mix(in srgb, var(--color-ink) 78%, transparent) 0%,
             color-mix(in srgb, var(--color-ink) 45%, transparent) 42%,
             transparent 100%);
+    }
+}
+
+@layer components {
+    /* Section bands. The page alternates between paper and sand so each block
+       reads as its own, without a border doing the work. */
+    .band-sand {
+        background: var(--color-sand);
+    }
+
+    .band-hero {
+        background: linear-gradient(135deg,
+            color-mix(in srgb, var(--color-sand) 60%, var(--color-paper)) 0%,
+            var(--color-paper) 100%);
+    }
+
+    /* The solid call to action. */
+    .btn-accent {
+        background: var(--color-accent);
+        color: var(--color-paper);
+        transition: opacity 180ms ease;
+    }
+
+    .btn-accent:hover {
+        opacity: 0.9;
+    }
+
+    /* The step rail in "how it works": one line behind three marks. */
+    .steps::before {
+        content: '';
+        position: absolute;
+        top: 1.75rem;
+        left: 16%;
+        right: 16%;
+        height: 1px;
+        background: var(--color-rule);
     }
 }

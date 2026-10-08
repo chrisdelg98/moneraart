@@ -25,23 +25,47 @@
     </a>
 
     <header class="border-b rule">
-        <div class="mx-auto flex max-w-[1400px] items-center justify-between gap-8 px-4 py-5 sm:px-8">
-            <a href="{{ route('home') }}" class="group">
-                <span class="font-display text-xl tracking-tight">
-                    {{ \App\Support\Facades\Settings::get('store.name') }}
-                </span>
-                <span class="label ml-3 hidden sm:inline">Printable wall art</span>
+        <div class="mx-auto flex max-w-[1400px] items-center justify-between gap-8 px-4 py-4 sm:px-8">
+            <a href="{{ route('home') }}" class="font-display text-xl tracking-tight">
+                {{ \App\Support\Facades\Settings::get('store.name') }}
             </a>
 
-            <nav aria-label="Main" class="flex items-center gap-7 text-sm">
-                <a href="{{ route('shop') }}" class="hover:text-accent">Shop</a>
+            <nav aria-label="Main" class="hidden items-center gap-8 text-sm md:flex">
+                @foreach ([['home', 'Home'], ['shop', 'Shop']] as [$name, $label])
+                    <a href="{{ route($name) }}"
+                       @class([
+                           'pb-1 hover:text-accent',
+                           'border-b-2 border-accent text-accent' => request()->routeIs($name),
+                       ])
+                       @if (request()->routeIs($name)) aria-current="page" @endif>
+                        {{ $label }}
+                    </a>
+                @endforeach
 
-                <a href="{{ route('cart') }}" class="flex items-center gap-1.5 hover:text-accent">
-                    Cart
-                    <span data-cart-count hidden
-                          class="min-w-5 rounded-full bg-ink px-1.5 text-center text-xs leading-5 text-paper"></span>
+                <a href="{{ route('legal', 'how-we-work') }}"
+                   @class(['pb-1 hover:text-accent', 'border-b-2 border-accent text-accent' => request()->fullUrlIs(route('legal', 'how-we-work'))])>
+                    About
                 </a>
             </nav>
+
+            <div class="flex items-center gap-5">
+                <a href="{{ route('shop') }}" class="hover:text-accent" aria-label="Search artwork">
+                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+                        <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" />
+                    </svg>
+                </a>
+
+                <a href="{{ route('cart') }}" class="relative hover:text-accent" aria-label="Cart">
+                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M6 6h15l-1.5 9h-12z" /><path d="M6 6 5 3H2" />
+                        <circle cx="9" cy="19" r="1" /><circle cx="18" cy="19" r="1" />
+                    </svg>
+                    <span data-cart-count hidden
+                          class="absolute -right-2 -top-2 min-w-[1.1rem] rounded-full bg-accent px-1 text-center text-[0.65rem] leading-[1.1rem] text-paper"></span>
+                </a>
+            </div>
         </div>
     </header>
 
@@ -49,23 +73,33 @@
         {{ $slot }}
     </main>
 
-    <footer class="band-footer mt-24 border-t rule">
-        <div class="mx-auto max-w-[1400px] px-4 py-14 text-sm sm:px-8">
-            <p class="font-display text-lg text-ink">
-                {{ \App\Support\Facades\Settings::get('store.name') }}
-            </p>
+    <footer class="band-sand mt-20 border-t rule">
+        <div class="mx-auto max-w-[1400px] px-4 py-14 sm:px-8">
+            <div class="flex flex-wrap justify-between gap-10">
+                <div>
+                    <p class="font-display text-xl">
+                        {{ \App\Support\Facades\Settings::get('store.name') }}
+                    </p>
+                    <p class="label mt-1">Printable wall art</p>
+                    <p class="mt-4 max-w-xs text-sm text-muted">
+                        Art that brings beauty to your space. Made with AI,
+                        selected and prepared by us.
+                    </p>
+                </div>
 
-            <p class="mt-2 max-w-prose text-muted">
-                Artwork made with AI, selected and prepared by
-                {{ \App\Support\Facades\Settings::get('store.name') }}.
-            </p>
+                <nav aria-label="Footer" class="flex flex-wrap gap-x-10 gap-y-2 text-sm">
+                    <a href="{{ route('shop') }}" class="text-muted hover:text-ink">Shop</a>
+                    <a href="{{ route('legal', 'how-we-work') }}" class="text-muted hover:text-ink">About</a>
+                    <a href="{{ route('legal', 'terms') }}" class="text-muted hover:text-ink">Terms</a>
+                    <a href="{{ route('legal', 'privacy') }}" class="text-muted hover:text-ink">Privacy</a>
+                    <a href="{{ route('legal', 'refunds') }}" class="text-muted hover:text-ink">Refunds</a>
+                </nav>
+            </div>
 
-            <nav aria-label="Legal" class="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-muted">
-                <a href="{{ route('legal', 'terms') }}" class="hover:text-ink">Terms</a>
-                <a href="{{ route('legal', 'privacy') }}" class="hover:text-ink">Privacy</a>
-                <a href="{{ route('legal', 'refunds') }}" class="hover:text-ink">Refunds</a>
-                <a href="{{ route('legal', 'how-we-work') }}" class="hover:text-ink">How we work</a>
-            </nav>
+            <p class="mt-12 border-t rule pt-6 text-sm text-muted">
+                &copy; {{ date('Y') }} {{ \App\Support\Facades\Settings::get('store.name') }}.
+                All rights reserved.
+            </p>
         </div>
     </footer>
 </body>
