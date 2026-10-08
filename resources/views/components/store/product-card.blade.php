@@ -16,16 +16,20 @@
     <div class="relative overflow-hidden">
         <x-store.artwork :image="$product->coverImage" :title="$t->title"
                          sizes="(max-width: 640px) 100vw, 320px"
-                         class="aspect-square w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
+                         class="aspect-[5/4] w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
     </div>
 
     <div class="flex flex-1 items-end justify-between gap-3 p-4">
         <div class="min-w-0">
-            <h3 class="truncate text-sm">
+            <h3 class="text-balance text-sm leading-snug">
                 <a href="{{ route('product', $t->slug) }}" class="after:absolute after:inset-0 hover:text-accent">
                     {{ $t->title }}
                 </a>
             </h3>
+
+            @if ($t->subtitle)
+                <p class="mt-1 truncate text-xs text-muted">{{ $t->subtitle }}</p>
+            @endif
 
             <p class="mt-1 flex items-baseline gap-2">
                 <span class="font-display text-lg">{{ $product->effectivePrice()->format() }}</span>

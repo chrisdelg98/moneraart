@@ -10,13 +10,20 @@
 @endphp
 
 <x-layouts.storefront title="Shop">
+    <section class="band border-b rule">
+        <div class="mx-auto max-w-[1400px] px-4 py-12 sm:px-8 lg:py-14">
+            <h1 class="text-4xl sm:text-5xl">Shop</h1>
+            <span class="mt-4 block h-0.5 w-14 bg-accent"></span>
+            <p class="mt-5 text-muted">Curated pieces, ready to print or keep.</p>
+        </div>
+    </section>
+
     <div class="mx-auto max-w-[1400px] px-4 py-10 sm:px-8">
-        <h1 class="text-4xl sm:text-5xl">Shop</h1>
 
         @if ($products->isEmpty())
             <p class="mt-6 text-muted">No artwork published yet.</p>
         @else
-            <div class="mt-10 grid gap-10 lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-12">
+            <div class="grid gap-10 lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-12">
 
                 {{-- Filters apply as you type or tick. No Apply button: a filter
                      you have to confirm is a filter most people abandon. --}}
@@ -55,27 +62,13 @@
                     </p>
 
                     <ul id="grid" class="mt-6 grid gap-x-6 gap-y-10 sm:grid-cols-2 xl:grid-cols-3">
-                        @foreach ($all as $i => $row)
+                        @foreach ($all as $row)
                             <li data-card
                                 data-title="{{ Str::lower($row['t']->title.' '.$row['t']->subtitle) }}"
                                 data-style="{{ $row['style'] }}"
                                 data-room="{{ $row['room'] }}"
                                 data-theme="{{ $row['theme'] }}">
-                                <a href="{{ route('product', $row['t']->slug) }}" class="group block">
-                                    {{-- Capped height: at full width the image
-                                         dominated the page and pushed the next
-                                         row out of sight. --}}
-                                    <div class="overflow-hidden">
-                                        <x-store.artwork :image="$row['product']->coverImage"
-                                                         :title="$row['t']->title"
-                                                         sizes="(max-width: 640px) 100vw, 380px"
-                                                         class="aspect-[4/5] object-cover transition-opacity group-hover:opacity-90" />
-                                    </div>
-
-                                    <x-store.wall-label :product="$row['product']"
-                                                        :index="$i + 1" heading="h2" compact
-                                                        class="mt-4" />
-                                </a>
+                                <x-store.product-card :product="$row['product']" />
                             </li>
                         @endforeach
                     </ul>
