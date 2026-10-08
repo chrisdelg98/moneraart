@@ -19,15 +19,15 @@
 
         <div class="mx-auto max-w-[1400px] px-4 py-20 sm:px-8 lg:py-32">
             <div class="max-w-md lg:max-w-lg">
-                <p class="label">Art for modern living</p>
+                <p class="label">Digital art, ready to use</p>
 
                 <h1 class="mt-5 text-balance text-5xl leading-[1.05] sm:text-6xl">
-                    Printable art<br>
-                    <span class="text-accent">yours in seconds.</span>
+                    Art that brings beauty<br>
+                    <span class="text-accent">to your space.</span>
                 </h1>
 
                 <p class="mt-6 text-lg text-muted">
-                    Curated wall art to transform your space. Instant download,
+                    Curated pieces, ready to print or keep. Instant download,
                     no account, no waiting.
                 </p>
 
@@ -72,11 +72,12 @@
                     <p class="label">Curated collections</p>
 
                     <h2 id="collections" class="mt-3 text-balance text-4xl leading-tight sm:text-5xl">
-                        Find the style for your space.
+                        Find a style that fits.
                     </h2>
 
                     <p class="mt-5 max-w-xs text-muted">
-                        Timeless designs for every room, from modern to classic.
+                        Timeless designs, from modern to classic, for whatever
+                        you have in mind.
                     </p>
 
                     <a href="{{ route('shop') }}"
@@ -133,7 +134,7 @@
                     @foreach ([
                         ['Choose', 'Browse and buy the piece you want.', 'M6 6h15l-1.5 9h-12z M6 6 5 3H2 M9 20a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z M18 20a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z'],
                         ['Download', 'Your print-ready files arrive at once.', 'M12 3v12m0 0 4-4m-4 4-4-4 M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2'],
-                        ['Print & enjoy', 'Print at home or at your print shop.', 'M4 5h16v14H4z M4 14l5-5 4 4 3-3 4 4 M9 9.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z'],
+                        ['Print or keep', 'Print it, frame it, or keep it on screen.', 'M4 5h16v14H4z M4 14l5-5 4 4 3-3 4 4 M9 9.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z'],
                     ] as $i => [$title, $copy, $path])
                         <li class="relative text-center sm:text-left">
                             <span class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[var(--color-accent-soft)] sm:mx-0">

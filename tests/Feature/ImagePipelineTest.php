@@ -60,8 +60,19 @@ it('extracts a dominant colour for the loading placeholder', function (): void {
 it('rejects an image above the megapixel cap before decoding it', function (): void {
     $product = Product::factory()->create();
 
-    // 9000x6000 = 54MP, over the 50MP limit.
-    $this->pipeline->process($product, artwork(9000, 6000));
+    // Building the fixture costs 216 MB of raster. The pipeline itself never
+    // pays that — it reads the dimensions from the header and refuses before
+    // decoding, which is precisely what this asserts.
+    $previous = ini_get('memory_limit');
+    ini_set('memory_limit', '1G');
+
+    try {
+        // 9000x6000 = 54MP, over the 50MP limit.
+        $this->pipeline->process($product, artwork(9000, 6000));
+    } finally {
+        gc_collect_cycles();
+        ini_set('memory_limit', $previous);
+    }
 })->throws(RuntimeException::class, 'megapixels');
 
 it('rejects a file that is not an image', function (): void {

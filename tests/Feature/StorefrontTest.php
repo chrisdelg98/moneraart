@@ -22,7 +22,11 @@ beforeEach(function (): void {
 });
 
 it('renders the home page with nothing published', function (): void {
-    $this->get('/')->assertOk()->assertSee('Printable art');
+    // Asserted on structure, not on marketing copy — the headline is meant to
+    // change and a test that pins it just breaks every time it does.
+    $this->get('/')->assertOk()
+        ->assertSee(route('shop'), escape: false)
+        ->assertSee('How it works');
 });
 
 it('renders the shop and product pages', function (): void {

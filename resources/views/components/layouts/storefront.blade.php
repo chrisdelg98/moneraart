@@ -88,15 +88,15 @@
                         {{ \App\Support\Facades\Settings::get('store.name') }}
                     </p>
 
-                    <p class="label mt-2">Printable wall art</p>
+                    <p class="label mt-2">Digital art, ready to print</p>
 
                     {{-- A short accent rule: the one place the brand colour
                          appears in the footer, and it anchors the wordmark. --}}
                     <span class="mt-4 block h-0.5 w-14 bg-accent"></span>
 
                     <p class="mt-6 max-w-sm font-display text-lg leading-relaxed">
-                        Art that brings beauty to your space.<br>
-                        Made with AI, selected and prepared by us.
+                        Made with AI, selected and prepared by us.<br>
+                        Ready to print, or to keep as it is.
                     </p>
                 </div>
 
