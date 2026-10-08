@@ -8,6 +8,7 @@ use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Notifications\OrderConfirmed;
 use App\Support\BlindIndex;
 use App\Support\Money;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -27,6 +28,25 @@ final class MarkOrderPaid
 {
     /** @param array<string, mixed> $capture the PayPal capture resource */
     public function __invoke(Order $order, array $capture, string $source = 'capture'): PaymentOutcome
+    {
+        $outcome = $this->process($order, $capture, $source);
+
+        // Queued outside the transaction on purpose: a job enqueued inside one
+        // can be picked up by a worker before the commit lands, or survive a
+        // rollback and reference a row that no longer says what it said.
+        //
+        // Both outcomes send it. A held order is the case that needs it most —
+        // the money has left the customer's account and no other email will
+        // reach them until a human releases the files.
+        if (in_array($outcome->result, ['paid', 'manual_review'], true)) {
+            $outcome->order->customer->notify(new OrderConfirmed($outcome->order));
+        }
+
+        return $outcome;
+    }
+
+    /** @param array<string, mixed> $capture */
+    private function process(Order $order, array $capture, string $source): PaymentOutcome
     {
         return DB::transaction(function () use ($order, $capture, $source): PaymentOutcome {
             // Lock before reading status, or two concurrent paths both see

@@ -6,6 +6,8 @@ use App\Enums\OrderStatus;
 use App\Models\DownloadGrant;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Notifications\DownloadLinksReady;
+use App\Notifications\OrderConfirmed;
 use App\Services\Cart\CartService;
 use App\Support\Facades\Settings;
 use Database\Seeders\AttributeSeeder;
@@ -257,4 +259,85 @@ it('hides the PayPal buttons when payments are not enabled', function (): void {
     $this->get(route('checkout'))->assertOk()
         ->assertSee('Payments are not switched on yet')
         ->assertDontSee('paypal.com/sdk/js', escape: false);
+});
+
+it('emails a receipt as soon as the payment is verified', function (): void {
+    fakePayPalCheckout('5.99');
+    startCheckout($this->cart, 599);
+
+    $create = $this->postJson(route('checkout.paypal.create'), [
+        'email' => 'buyer@example.com', 'terms' => 1,
+    ])->json();
+
+    $this->postJson(route('checkout.paypal.capture'), [
+        'orderUuid' => $create['orderUuid'],
+        'paypalOrderId' => $create['paypalOrderId'],
+    ])->assertOk();
+
+    $customer = Order::firstOrFail()->customer;
+
+    Notification::assertSentTo($customer, OrderConfirmed::class);
+    Notification::assertSentTo($customer, DownloadLinksReady::class);
+});
+
+it('emails a receipt even when the order is held for review', function (): void {
+    // The case that matters: paid, not fulfilled, and no delivery email is
+    // coming. Without the receipt the customer has been charged in silence.
+    fakePayPalCheckout('0.01');
+    startCheckout($this->cart, 599);
+
+    $create = $this->postJson(route('checkout.paypal.create'), [
+        'email' => 'buyer@example.com', 'terms' => 1,
+    ])->json();
+
+    $this->postJson(route('checkout.paypal.capture'), [
+        'orderUuid' => $create['orderUuid'],
+        'paypalOrderId' => $create['paypalOrderId'],
+    ])->assertOk();
+
+    $customer = Order::firstOrFail()->customer;
+
+    Notification::assertSentTo($customer, OrderConfirmed::class);
+    Notification::assertNotSentTo($customer, DownloadLinksReady::class);
+});
+
+it('states what was bought and what it cost, from the order line', function (): void {
+    fakePayPalCheckout('5.99');
+    startCheckout($this->cart, 599);
+
+    $create = $this->postJson(route('checkout.paypal.create'), [
+        'email' => 'buyer@example.com', 'terms' => 1,
+    ])->json();
+
+    $this->postJson(route('checkout.paypal.capture'), [
+        'orderUuid' => $create['orderUuid'],
+        'paypalOrderId' => $create['paypalOrderId'],
+    ])->assertOk();
+
+    $order = Order::with('items')->firstOrFail();
+    $mail = (new OrderConfirmed($order))->toMail($order->customer);
+    $html = $mail->render();
+
+    expect($mail->subject)->toContain($order->number)
+        ->and($html)->toContain($order->items->first()->title_snapshot)
+        ->and($html)->toContain($order->total()->format())
+        ->and($html)->toContain(route('order.success', $order->uuid));
+});
+
+it('sends one receipt however many paths reach the payment', function (): void {
+    // The capture call and the webhook both run for a normal purchase. Only
+    // the one that actually moves the order sends the email.
+    fakePayPalCheckout('5.99');
+    startCheckout($this->cart, 599);
+
+    $create = $this->postJson(route('checkout.paypal.create'), [
+        'email' => 'buyer@example.com', 'terms' => 1,
+    ])->json();
+
+    $capture = ['orderUuid' => $create['orderUuid'], 'paypalOrderId' => $create['paypalOrderId']];
+
+    $this->postJson(route('checkout.paypal.capture'), $capture)->assertOk();
+    $this->postJson(route('checkout.paypal.capture'), $capture);
+
+    Notification::assertSentToTimes(Order::firstOrFail()->customer, OrderConfirmed::class, 1);
 });
