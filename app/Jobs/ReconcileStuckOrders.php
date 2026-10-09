@@ -8,9 +8,11 @@ use App\Actions\Orders\CompleteOrder;
 use App\Actions\Orders\MarkOrderPaid;
 use App\Enums\OrderStatus;
 use App\Models\Order;
+use App\Services\Coupons\CouponLedger;
 use App\Services\PayPal\PayPalOrderService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -121,12 +123,18 @@ class ReconcileStuckOrders implements ShouldQueue
             return;
         }
 
-        $order->forceFill([
-            'status' => OrderStatus::Cancelled,
-            'cancelled_at' => now(),
-            'manual_review_reason' => $remoteStatus !== null
-                ? "Abandoned at checkout; PayPal reported {$remoteStatus}."
-                : 'Abandoned before reaching PayPal.',
-        ])->save();
+        DB::transaction(function () use ($order, $remoteStatus): void {
+            $order->forceFill([
+                'status' => OrderStatus::Cancelled,
+                'cancelled_at' => now(),
+                'manual_review_reason' => $remoteStatus !== null
+                    ? "Abandoned at checkout; PayPal reported {$remoteStatus}."
+                    : 'Abandoned before reaching PayPal.',
+            ])->save();
+
+            // The use this order was holding goes back to the pool. Without
+            // this, a limited coupon is slowly consumed by carts nobody paid.
+            app(CouponLedger::class)->release($order);
+        });
     }
 }

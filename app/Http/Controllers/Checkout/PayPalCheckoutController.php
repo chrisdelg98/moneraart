@@ -35,10 +35,17 @@ class PayPalCheckoutController
             // not a control. See §7.7.1.
             'terms' => ['required', 'accepted'],
             'marketing' => ['nullable', 'boolean'],
+            // The code only. What it is worth is decided server-side.
+            'coupon' => ['nullable', 'string', 'max:64'],
         ]);
 
         try {
-            $order = $placeOrder($request, $data['email'], (bool) ($data['marketing'] ?? false));
+            $order = $placeOrder(
+                $request,
+                $data['email'],
+                (bool) ($data['marketing'] ?? false),
+                $data['coupon'] ?? null,
+            );
         } catch (Throwable $e) {
             return response()->json(['message' => $e->getMessage()], 422);
         }

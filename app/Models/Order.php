@@ -72,6 +72,18 @@ class Order extends Model
         return $this->hasMany(DownloadGrant::class);
     }
 
+    /** @return BelongsTo<Coupon, $this> */
+    public function coupon(): BelongsTo
+    {
+        return $this->belongsTo(Coupon::class);
+    }
+
+    /** @return HasOne<CouponUsage, $this> */
+    public function couponUsage(): HasOne
+    {
+        return $this->hasOne(CouponUsage::class);
+    }
+
     /** @return HasMany<Payment, $this> */
     public function payments(): HasMany
     {

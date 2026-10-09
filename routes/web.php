@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Checkout\CouponController;
 use App\Http\Controllers\Checkout\FreeCheckoutController;
 use App\Http\Controllers\Checkout\PayPalCheckoutController;
 use App\Http\Controllers\DownloadController;
@@ -32,6 +33,12 @@ Route::post('/cart/{product:uuid}', [CartController::class, 'add'])->name('cart.
 Route::delete('/cart/{product:uuid}', [CartController::class, 'remove'])->name('cart.remove');
 
 Route::get('/checkout', [CheckoutController::class, 'show'])->name('checkout');
+
+// Tighter than the rest of checkout: this endpoint answers "does this code
+// exist?", which is exactly what a brute-force search needs. See §16.3.
+Route::post('/checkout/coupon', CouponController::class)
+    ->middleware('throttle:20,1')
+    ->name('checkout.coupon');
 
 Route::post('/checkout/paypal/create', [PayPalCheckoutController::class, 'create'])
     ->middleware('throttle:10,1')
