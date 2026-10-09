@@ -36,13 +36,18 @@ class ProductForm
             // Filament's resource pages wrap the form in a two-column schema,
             // so a grid that does not claim the full span silently renders at
             // half the screen width.
-            Grid::make(4)->columnSpanFull()->schema([
-                Group::make()->columnSpan(['default' => 4, 'lg' => 3])->schema([
+            //
+            // Twelve columns rather than four: at a quarter the right-hand
+            // side squeezed its selects until the longer room and theme names
+            // wrapped. A third gives them a line each and still leaves the
+            // description the wider half it earns.
+            Grid::make(12)->columnSpanFull()->schema([
+                Group::make()->columnSpan(['default' => 12, 'lg' => 8])->schema([
                     self::contentSection(),
                     self::pricingSection(),
                 ]),
 
-                Group::make()->columnSpan(['default' => 4, 'lg' => 1])->schema([
+                Group::make()->columnSpan(['default' => 12, 'lg' => 4])->schema([
                     self::publishSection(),
                     self::classificationSection(),
                     self::seoSection(),

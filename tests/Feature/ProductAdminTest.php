@@ -134,3 +134,29 @@ it('makes a published product visible without typing a date', function (): void 
     expect($product->published_at)->not->toBeNull()
         ->and(Product::visibleIn('en')->count())->toBe(1);
 });
+
+it('puts the save buttons in the header, not below the fold', function (): void {
+    // The product form is taller than a screen, so buttons at the foot mean
+    // scrolling past everything you just filled in to reach them.
+    $page = new CreateProduct;
+
+    expect((fn () => $this->getFormActions())->call($page))->toBe([]);
+
+    $header = collect((fn () => $this->getHeaderActions())->call($page))
+        ->map(fn ($action): string => $action->getName());
+
+    expect($header)->toContain('create');
+});
+
+it('keeps the record actions alongside the save when editing', function (): void {
+    $product = Product::factory()->create();
+    $page = new EditProduct;
+    $page->record = $product;
+
+    $names = collect((fn () => $this->getHeaderActions())->call($page))
+        ->map(fn ($action): string => $action->getName());
+
+    // Delete first, save last: the primary button is always rightmost.
+    expect($names)->toContain('delete')->toContain('save')
+        ->and($names->last())->toBe('save');
+});

@@ -36,14 +36,14 @@ class CouponForm
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
-            Grid::make(4)->columnSpanFull()->schema([
-                Group::make()->columnSpan(['default' => 4, 'lg' => 3])->schema([
+            Grid::make(12)->columnSpanFull()->schema([
+                Group::make()->columnSpan(['default' => 12, 'lg' => 8])->schema([
                     self::codeSection(),
                     self::discountSection(),
                     self::scopeSection(),
                 ]),
 
-                Group::make()->columnSpan(['default' => 4, 'lg' => 1])->schema([
+                Group::make()->columnSpan(['default' => 12, 'lg' => 4])->schema([
                     self::windowSection(),
                     self::limitsSection(),
                 ]),
