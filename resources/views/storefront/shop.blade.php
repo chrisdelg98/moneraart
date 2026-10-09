@@ -60,7 +60,8 @@
                                         @foreach ($values as $value)
                                             <label class="flex cursor-pointer items-center gap-2 py-1 text-sm">
                                                 <input type="checkbox" data-facet="{{ $key }}"
-                                                       value="{{ $value->value }}" class="shrink-0">
+                                                       value="{{ $value->value }}" class="shrink-0"
+                                                       @checked(in_array($value->value, $selected[$key] ?? [], true))>
                                                 <span>{{ $value->label() }}</span>
                                             </label>
                                         @endforeach
@@ -176,7 +177,11 @@
             };
 
             const clear = () => {
-                form.reset();
+                // Not form.reset(): a box ticked by the query string is a
+                // default, and reset would faithfully tick it again.
+                form.querySelectorAll('[data-facet]:checked').forEach((box) => { box.checked = false; });
+                search.value = '';
+
                 apply();
                 search.focus();
             };
@@ -190,6 +195,12 @@
             });
 
             form.addEventListener('change', apply);
+
+            // A visitor arriving from a style tile has boxes already ticked, so
+            // the grid has to agree with them before anyone touches anything.
+            if (form.querySelector('[data-facet]:checked')) {
+                apply();
+            }
             document.getElementById('clear-filters').addEventListener('click', clear);
             document.getElementById('clear-inline')?.addEventListener('click', clear);
 

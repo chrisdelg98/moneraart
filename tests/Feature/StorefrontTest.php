@@ -150,3 +150,38 @@ it('never promises a blanket resolution in the terms', function (): void {
         ->assertDontSee('300 DPI')
         ->assertSee('Every product page lists the resolution');
 });
+
+it('arrives at the shop with a style already ticked', function (): void {
+    $product = Product::factory()->published()->withTranslation('en')->create();
+    $style = Attribute::where('key', 'style')->first()->values()->first();
+    $product->attributeValues()->sync([$style->id]);
+
+    // The home page's tiles link here. Landing on the whole catalogue would
+    // make the visitor find the filter again.
+    $this->get(route('shop', ['style' => $style->value]))
+        ->assertOk()
+        ->assertViewHas('selected', ['style' => [$style->value]]);
+});
+
+it('ignores a style in the query string that is not a real facet', function (): void {
+    $product = Product::factory()->published()->withTranslation('en')->create();
+    $style = Attribute::where('key', 'style')->first()->values()->first();
+    $product->attributeValues()->sync([$style->id]);
+
+    // Anything not matching a real facet value is dropped, so the query
+    // string can never tick a box that does not exist.
+    $this->get(route('shop', ['style' => 'not-a-style']))
+        ->assertOk()
+        ->assertViewHas('selected', []);
+});
+
+it('offers only styles that have artwork to show', function (): void {
+    $product = Product::factory()->published()->withTranslation('en')->create();
+    $styles = Attribute::where('key', 'style')->first()->values()->with('translations')->get();
+    $product->attributeValues()->sync([$styles->first()->id]);
+
+    // An empty shelf is worse than a shorter row of them.
+    $this->get('/')->assertOk()
+        ->assertSee($styles->first()->label('en'))
+        ->assertDontSee($styles->last()->label('en'));
+});

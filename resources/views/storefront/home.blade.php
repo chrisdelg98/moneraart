@@ -88,16 +88,16 @@
                 </div>
 
                 <ul class="grid grid-cols-2 gap-4 lg:grid-cols-4">
-                    @foreach ($styles as $style)
+                    @foreach ($styles as ['value' => $style, 'cover' => $cover])
                         <li>
-                            <a href="{{ route('shop') }}?style={{ $style->value }}"
+                            {{-- The shop reads this and arrives with the filter
+                                 already ticked. --}}
+                            <a href="{{ route('shop', ['style' => $style->value]) }}"
                                {{-- A fixed height per breakpoint rather than one
                                     ratio: four tiles beside a heading column are
                                     narrow, and a ratio turns narrow into squat. --}}
                                class="group relative block h-44 overflow-hidden sm:h-52 lg:h-60">
-                                @php $tile = $style->products()->with('coverImage')->first(); @endphp
-
-                                <x-store.artwork :image="$tile?->coverImage" :title="$style->label()"
+                                <x-store.artwork :image="$cover" :title="$style->label()"
                                                  sizes="(max-width: 1024px) 50vw, 260px"
                                                  class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" />
 
