@@ -65,6 +65,7 @@ class FreeCheckoutController
         }
 
         $order->forceFill(['status' => OrderStatus::Paid, 'paid_at' => now()])->save();
+        $order->customer->recalculateOrderTotals();
         $complete($order->refresh());
 
         $this->cart->clear();

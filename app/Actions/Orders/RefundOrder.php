@@ -130,6 +130,8 @@ final class RefundOrder
                     ]);
             }
 
+            $order->customer->recalculateOrderTotals();
+
             $this->audit->record('order.refunded', $order, [
                 'amount' => $amount->toDecimalString(),
                 'full' => $isFull,

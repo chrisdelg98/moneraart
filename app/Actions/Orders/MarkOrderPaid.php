@@ -42,6 +42,12 @@ final class MarkOrderPaid
             $outcome->order->customer->notify(new OrderConfirmed($outcome->order));
         }
 
+        // Recomputed, so the replay that reaches here from the webhook as well
+        // as the capture cannot count one sale twice.
+        if ($outcome->result === 'paid') {
+            $outcome->order->customer->recalculateOrderTotals();
+        }
+
         return $outcome;
     }
 

@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\OrderStatus;
 use App\Support\BlindIndex;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
 
 /**
  * Only what delivering a purchase requires. No address, no phone, no password.
@@ -18,8 +20,14 @@ use Illuminate\Notifications\Notifiable;
  *
  * @property string $email
  * @property string $email_hash
+ * @property string|null $email_domain
  * @property bool $marketing_consent
  * @property string $locale
+ * @property int $orders_count
+ * @property int $lifetime_value_cents
+ * @property Carbon|null $first_order_at
+ * @property Carbon|null $last_order_at
+ * @property Carbon $created_at
  */
 class Customer extends Model
 {
@@ -67,5 +75,29 @@ class Customer extends Model
     public function getEmailAttribute(): string
     {
         return (string) $this->email_encrypted;
+    }
+
+    /**
+     * Recomputes the order totals held on the customer row.
+     *
+     * Recomputed rather than incremented, so it is safe to call twice: the
+     * capture response and the webhook both reach MarkOrderPaid for a normal
+     * purchase, and an increment would count that sale once for each.
+     *
+     * Only paid, unrefunded orders count — the same definition of revenue the
+     * dashboard uses.
+     */
+    public function recalculateOrderTotals(): void
+    {
+        $orders = $this->orders()
+            ->whereNotNull('paid_at')
+            ->where('status', '!=', OrderStatus::Refunded);
+
+        $this->forceFill([
+            'orders_count' => (clone $orders)->count(),
+            'lifetime_value_cents' => (int) (clone $orders)->sum('total_cents'),
+            'first_order_at' => (clone $orders)->min('paid_at'),
+            'last_order_at' => (clone $orders)->max('paid_at'),
+        ])->save();
     }
 }
