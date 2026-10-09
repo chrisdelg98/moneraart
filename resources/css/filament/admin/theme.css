@@ -147,6 +147,39 @@
         padding-top: 0.4rem;
         padding-bottom: 0.4rem;
     }
+
+    /*
+     * The sidebar's scrollbar.
+     *
+     * Filament reserves a gutter for it whether or not it is needed, so the
+     * menu sits permanently off-centre against a strip of empty space. The
+     * gutter goes, and what is left is a hairline the same colour as every
+     * other rule on the page — there when the list is long enough to need
+     * it, invisible otherwise.
+     */
+    .fi-sidebar-nav {
+        scrollbar-gutter: auto;
+        scrollbar-width: thin;
+        scrollbar-color: color-mix(in srgb, var(--color-rule) 90%, transparent) transparent;
+    }
+
+    .fi-sidebar-nav::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .fi-sidebar-nav::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .fi-sidebar-nav::-webkit-scrollbar-thumb {
+        background: color-mix(in srgb, var(--color-rule) 90%, transparent);
+        border-radius: 9999px;
+    }
+
+    /* Only on approach, so it is never the thing you notice first. */
+    .fi-sidebar-nav:hover::-webkit-scrollbar-thumb {
+        background: color-mix(in srgb, var(--color-ink) 25%, transparent);
+    }
 }
 
 /* Dark mode keeps Filament's own surfaces: a cream panel inverted is mud, and
