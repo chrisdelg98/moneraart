@@ -31,6 +31,10 @@ class AuditLogsTable
         'order.reissue' => 'Reissued download links',
         'order.resend' => 'Resent the download email',
         'settings.updated' => 'Changed a setting',
+        'download.revoked' => 'Revoked a download link',
+        'download.restored' => 'Restored a revoked link',
+        'download.extended' => 'Extended a download link',
+        'download.regenerated' => 'Replaced a download link',
     ];
 
     public static function configure(Table $table): Table
