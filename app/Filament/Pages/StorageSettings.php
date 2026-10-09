@@ -18,6 +18,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use UnitEnum;
 
 /**
  * Where product files live, and proof that they can.
@@ -33,6 +34,8 @@ class StorageSettings extends Page
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCircleStack;
 
     protected static ?string $navigationLabel = 'Storage';
+
+    protected static UnitEnum|string|null $navigationGroup = 'Configuration';
 
     protected static ?string $title = 'Storage';
 

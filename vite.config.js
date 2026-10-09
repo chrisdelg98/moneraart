@@ -7,7 +7,7 @@ export default defineConfig({
     plugins: [
         laravel({
             // Separate builds: storefront CSS must not carry admin classes.
-            input: ['resources/css/storefront.css', 'resources/js/storefront.js'],
+            input: ['resources/css/storefront.css', 'resources/js/storefront.js', 'resources/css/filament/admin/theme.css'],
             refresh: true,
             fonts: [
                 // Two families, four weights. Nothing more. See §12.2.1.

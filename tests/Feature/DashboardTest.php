@@ -7,6 +7,7 @@ use App\Filament\Widgets\NeedsAttention;
 use App\Filament\Widgets\RecentOrders;
 use App\Filament\Widgets\SchedulerHealth;
 use App\Filament\Widgets\StoreOverview;
+use App\Filament\Widgets\TopProducts;
 use App\Models\Order;
 use App\Models\User;
 use App\Models\WebhookEvent;
@@ -132,4 +133,29 @@ it('says so when a verified payment was never applied', function (): void {
 
     // PayPal confirmed it and nothing acted on it. Someone has paid.
     livewire(SchedulerHealth::class)->assertSee('not applied');
+});
+
+it('hides the top products panel until something has sold', function (): void {
+    expect(TopProducts::canView())->toBeFalse();
+});
+
+it('ranks products by what was actually paid this month', function (): void {
+    $order = paidAt('today', 1500);
+    $order->items()->create([
+        'product_type' => 'single',
+        'title_snapshot' => 'Art Deco Geometry No. 4',
+        'slug_snapshot' => 'art-deco-geometry-no-4',
+        'unit_price_cents' => 1500,
+        'quantity' => 1,
+        'total_cents' => 1500,
+        'file_manifest' => [],
+        'created_at' => now(),
+    ]);
+
+    // Grouped on the snapshot, so a piece renamed or deleted since the sale
+    // still reports under the name it was bought as.
+    livewire(TopProducts::class)
+        ->assertSee('Art Deco Geometry No. 4')
+        ->assertSee('$15.00')
+        ->assertSee('1 sale');
 });

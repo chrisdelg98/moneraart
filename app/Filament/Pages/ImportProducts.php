@@ -21,6 +21,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use UnitEnum;
 
 /**
  * Two ways in: paste JSON, or fill in the spreadsheet template.
@@ -39,6 +40,8 @@ class ImportProducts extends Page
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedArrowUpTray;
 
     protected static ?string $navigationLabel = 'Import';
+
+    protected static UnitEnum|string|null $navigationGroup = 'Catalogue';
 
     protected static ?string $title = 'Import products';
 

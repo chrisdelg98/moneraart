@@ -17,6 +17,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\Mail;
 use Throwable;
+use UnitEnum;
 
 /**
  * SMTP, with a test send beside the fields that control it.
@@ -31,6 +32,8 @@ class EmailSettings extends Page
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedEnvelope;
 
     protected static ?string $navigationLabel = 'Email';
+
+    protected static UnitEnum|string|null $navigationGroup = 'Configuration';
 
     protected static ?string $title = 'Email';
 

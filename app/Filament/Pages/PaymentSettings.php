@@ -19,6 +19,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Throwable;
+use UnitEnum;
 
 /**
  * Three fields and one button.
@@ -35,6 +36,8 @@ class PaymentSettings extends Page
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCreditCard;
 
     protected static ?string $navigationLabel = 'Payments';
+
+    protected static UnitEnum|string|null $navigationGroup = 'Configuration';
 
     protected static ?string $title = 'Payments';
 

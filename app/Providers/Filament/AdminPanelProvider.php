@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Dashboard;
 use App\Filament\Widgets\NeedsAttention;
 use App\Filament\Widgets\RecentOrders;
 use App\Filament\Widgets\SchedulerHealth;
 use App\Filament\Widgets\StoreOverview;
+use App\Filament\Widgets\TopProducts;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -32,9 +33,22 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
+            ->viteTheme('resources/css/filament/admin/theme.css')
             ->login()
+            // The storefront's terracotta, so the two halves of the product
+            // do not look like two products.
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::hex('#b4552e'),
+                'gray' => Color::Stone,
+            ])
+            ->font('Inter')
+            // Grouped for order and for assistive tech; the theme hides the
+            // headings and separates the clusters with a hairline instead.
+            // The order follows the day: what sells, what sold, how it is set up.
+            ->navigationGroups([
+                'Catalogue',
+                'Sales',
+                'Configuration',
             ])
             // The product form is two columns of real content; boxing it into a
             // centred column wastes most of a wide screen and squeezes the
@@ -57,6 +71,7 @@ class AdminPanelProvider extends PanelProvider
                 StoreOverview::class,
                 NeedsAttention::class,
                 RecentOrders::class,
+                TopProducts::class,
             ])
             ->middleware([
                 EncryptCookies::class,
