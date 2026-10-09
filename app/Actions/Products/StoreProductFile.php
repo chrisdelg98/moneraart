@@ -6,6 +6,7 @@ namespace App\Actions\Products;
 
 use App\Models\Product;
 use App\Models\ProductFile;
+use App\Services\Storage\StorageManager;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use RuntimeException;
@@ -39,6 +40,8 @@ final class StoreProductFile
         'A-series' => 0.7071,
     ];
 
+    public function __construct(private readonly StorageManager $storage) {}
+
     public function __invoke(Product $product, string $sourcePath, string $originalName): ProductFile
     {
         // The browser's Content-Type is a claim, not evidence. Sniff the file.
@@ -70,14 +73,19 @@ final class StoreProductFile
         $format = self::ALLOWED[$mime];
         $path = "{$product->uuid}/{$uuid}.{$format}";
 
+        // Whichever disk the owner has selected. Recorded on the row below,
+        // so files sold before a driver change keep downloading from where
+        // they were put. See §8.6.
+        $disk = $this->storage->diskName();
+
         // Filenames are UUIDs, so a leaked path reveals nothing about the
         // catalog and nothing about what the file contains.
-        Storage::disk('private')->put($path, file_get_contents($sourcePath));
+        Storage::disk($disk)->put($path, file_get_contents($sourcePath));
 
         $dimensions = $this->dimensions($sourcePath, $mime);
 
         $file = $product->files()->create([
-            'disk' => 'private',
+            'disk' => $disk,
             'path' => $path,
             'original_filename' => $originalName,
             'display_name' => pathinfo($originalName, PATHINFO_FILENAME),
