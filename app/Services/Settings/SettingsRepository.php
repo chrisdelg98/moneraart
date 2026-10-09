@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Settings;
 
 use App\Models\Setting;
+use App\Services\Audit\AuditLogger;
 use Illuminate\Contracts\Cache\Repository as CacheRepository;
 use Illuminate\Support\Facades\Crypt;
 
@@ -79,6 +80,14 @@ final class SettingsRepository
         );
 
         $this->flush();
+
+        // The key, never the value: half of these are secrets, and an audit
+        // trail that records them is a second place to steal them from.
+        // Knowing when the live PayPal keys changed is the point. See §19.
+        app(AuditLogger::class)->record('settings.updated', null, [
+            'key' => $key,
+            'secret' => $isSecret,
+        ]);
     }
 
     /** @param array<string, mixed> $values */
