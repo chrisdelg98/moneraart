@@ -32,10 +32,11 @@ class ReconcileStuckOrders implements ShouldQueue
     public int $tries = 1;
 
     /** Long enough that a customer still on the PayPal popup is left alone. */
-    private const STUCK_AFTER_MINUTES = 30;
+    public const STUCK_AFTER_MINUTES = 30;
 
     /** Past this, an order with no payment at PayPal is abandoned, not pending. */
-    private const ABANDON_AFTER_HOURS = 24;
+    /** Also read by the dashboard, to tell whether this job is running. */
+    public const ABANDON_AFTER_HOURS = 24;
 
     public function handle(
         PayPalOrderService $paypal,
