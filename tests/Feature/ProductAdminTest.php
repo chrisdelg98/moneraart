@@ -8,9 +8,11 @@ use App\Filament\Resources\Products\Pages\EditProduct;
 use App\Models\Attribute;
 use App\Models\Product;
 use App\Models\User;
+use App\Services\Media\ImagePipeline;
 use Database\Seeders\AttributeSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
 
 use function Pest\Livewire\livewire;
 
@@ -146,8 +148,9 @@ it('puts the save buttons in the header, not below the fold', function (): void 
     $header = collect((fn () => $this->getHeaderActions())->call($page))
         ->map(fn ($action): string => $action->getName());
 
-    // Two answers instead of a dropdown and a generic Create.
-    expect($header)->toContain('saveAsDraft')->toContain('publish');
+    // One save, and no publish: a product here has no artwork and no files,
+    // because both need the record to exist first.
+    expect($header)->toContain('create')->not->toContain('publish');
 });
 
 /** The header action names for a product in a given state. */
@@ -186,7 +189,7 @@ it('lands on the edit page after creating, where the artwork is', function (): v
             'type' => 'single',
             'attr_style' => $style->id,
         ])
-        ->callAction('saveAsDraft')
+        ->callAction('create')
         ->assertHasNoFormErrors();
 
     $product = Product::firstOrFail();
@@ -202,25 +205,50 @@ it('lands on the edit page after creating, where the artwork is', function (): v
         ->assertSee('Files');
 });
 
-it('publishes straight from the create form', function (): void {
-    $style = Attribute::where('key', 'style')->first()->values()->first();
+it('publishes from the edit page, once there is something to publish', function (): void {
+    $product = Product::factory()->withTranslation('en')->create(['status' => ProductStatus::Draft]);
 
-    livewire(CreateProduct::class)
-        ->fillForm([
-            'title' => 'Botanical Silhouette',
-            'price_cents' => '5.99',
-            'type' => 'single',
-            'attr_style' => $style->id,
-        ])
+    livewire(EditProduct::class, ['record' => $product->getRouteKey()])
         ->callAction('publish')
         ->assertHasNoFormErrors();
 
-    $product = Product::firstOrFail();
-
     // The visibleIn scope needs published_at, so a null one would hide the
     // product forever however green its badge looked.
-    expect($product->status)->toBe(ProductStatus::Published)
+    expect($product->refresh()->status)->toBe(ProductStatus::Published)
         ->and($product->published_at)->not->toBeNull();
+});
+
+it('names what is missing before publishing, rather than refusing', function (): void {
+    // A product with no files is a supported state — the card reads "Soon"
+    // and the cart refuses it — so this warns instead of blocking.
+    $product = Product::factory()->withTranslation('en')->create(['status' => ProductStatus::Draft]);
+
+    $page = new EditProduct;
+    $page->record = $product;
+
+    $publish = collect((fn () => $this->getHeaderActions())->call($page))
+        ->firstWhere(fn ($action): bool => $action->getName() === 'publish');
+
+    expect($publish->getModalDescription())
+        ->toContain('no artwork')
+        ->toContain('cannot be bought');
+});
+
+it('says nothing is missing when nothing is', function (): void {
+    Storage::fake('private');
+    Storage::fake('public');
+
+    $product = sellable();
+    app(ImagePipeline::class)->process($product, artwork(1200, 1600), isCover: true);
+    $product->forceFill(['status' => ProductStatus::Draft])->save();
+
+    $page = new EditProduct;
+    $page->record = $product->refresh();
+
+    $publish = collect((fn () => $this->getHeaderActions())->call($page))
+        ->firstWhere(fn ($action): bool => $action->getName() === 'publish');
+
+    expect($publish->getModalDescription())->toBe('It will appear in the shop straight away.');
 });
 
 it('says where the artwork is while creating, and not after', function (): void {

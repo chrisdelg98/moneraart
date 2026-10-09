@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Products\Pages;
 
-use App\Enums\ProductStatus;
 use App\Filament\Concerns\PutsFormActionsInHeader;
 use App\Filament\Resources\Products\Pages\Concerns\HandlesProductTranslation;
 use App\Filament\Resources\Products\ProductResource;
@@ -23,33 +22,28 @@ class CreateProduct extends CreateRecord
     private array $extracted = ['translation' => [], 'attributes' => []];
 
     /**
-     * Two buttons instead of one, because the choice is already being made.
+     * One button, because there is only one sensible thing to do here.
      *
-     * The status select still exists for the cases the buttons do not cover —
-     * scheduling, archiving — but the two answers anyone gives ninety per cent
-     * of the time should not need a dropdown first.
+     * Publishing from this page would offer to put a product in the shop with
+     * no artwork and no files — the two things it cannot have yet, because
+     * both need the record to exist. Publish lives on the edit page, after
+     * there is something to publish.
      *
      * @return array<Action>
      */
     protected function getSaveActions(): array
     {
         return [
-            Action::make('saveAsDraft')
-                ->label('Save as draft')
-                ->color('gray')
-                ->action(fn () => $this->createWithStatus(ProductStatus::Draft)),
+            ...array_filter(
+                $this->defaultSaveActions(),
+                fn (Action $action): bool => $action->getName() === 'cancel',
+            ),
 
-            Action::make('publish')
-                ->label('Publish product')
-                ->action(fn () => $this->createWithStatus(ProductStatus::Published)),
+            Action::make('create')
+                ->label('Save and add artwork')
+                ->keyBindings(['mod+s'])
+                ->action(fn () => $this->create()),
         ];
-    }
-
-    private function createWithStatus(ProductStatus $status): void
-    {
-        $this->data['status'] = $status->value;
-
-        $this->create();
     }
 
     /**

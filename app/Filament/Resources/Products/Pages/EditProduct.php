@@ -58,15 +58,38 @@ class EditProduct extends EditRecord
             ->label('Publish product')
             ->requiresConfirmation()
             ->modalHeading('Publish this product?')
-            ->modalDescription(fn (): string => $product->files()->count() === 0
-                ? 'There are no files attached yet, so it will show as "Soon" and cannot be bought.'
-                : 'It will appear in the shop straight away.')
+            ->modalDescription(fn (): string => self::whatIsMissing($product))
+            ->modalSubmitActionLabel('Publish')
             ->action(function (): void {
                 $this->data['status'] = ProductStatus::Published->value;
                 $this->save();
             });
 
         return $actions;
+    }
+
+    /**
+     * What the shopper will see if this goes out now.
+     *
+     * Publishing without files is a supported state — the card says "Soon"
+     * and the cart refuses it — so this warns rather than blocks. It just
+     * refuses to let it happen by accident.
+     */
+    private static function whatIsMissing(Product $product): string
+    {
+        $missing = [];
+
+        if ($product->cover_image_id === null) {
+            $missing[] = 'no artwork, so it will show the placeholder tile';
+        }
+
+        if ($product->files()->count() === 0) {
+            $missing[] = 'no files, so it will read "Soon" and cannot be bought';
+        }
+
+        return $missing === []
+            ? 'It will appear in the shop straight away.'
+            : 'It has '.implode(', and ', $missing).'.';
     }
 
     /**
