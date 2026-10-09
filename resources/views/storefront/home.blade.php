@@ -91,16 +91,23 @@
                     @foreach ($styles as $style)
                         <li>
                             <a href="{{ route('shop') }}?style={{ $style->value }}"
-                               class="group relative block aspect-[3/4] overflow-hidden">
+                               {{-- A fixed height per breakpoint rather than one
+                                    ratio: four tiles beside a heading column are
+                                    narrow, and a ratio turns narrow into squat. --}}
+                               class="group relative block h-44 overflow-hidden sm:h-52 lg:h-60">
                                 @php $tile = $style->products()->with('coverImage')->first(); @endphp
 
                                 <x-store.artwork :image="$tile?->coverImage" :title="$style->label()"
                                                  sizes="(max-width: 1024px) 50vw, 260px"
                                                  class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" />
 
-                                <div class="overlay-scrim pointer-events-none absolute inset-x-0 bottom-0 p-4">
-                                    <p class="font-display text-lg text-paper">{{ $style->label() }}</p>
-                                    <p class="mt-1 text-sm text-paper/70">Explore →</p>
+                                {{-- Deep top padding is the fade zone: the gradient
+                                     needs room above the words to arrive gently. --}}
+                                <div class="overlay-scrim pointer-events-none absolute inset-x-0 bottom-0 px-3 pb-3 pt-12">
+                                    <p class="text-balance font-display text-base leading-tight text-paper">
+                                        {{ $style->label() }}
+                                    </p>
+                                    <p class="mt-0.5 text-xs text-paper/75">Explore →</p>
                                 </div>
                             </a>
                         </li>

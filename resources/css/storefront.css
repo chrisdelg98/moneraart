@@ -160,11 +160,14 @@
     }
 
     /* Information laid over artwork needs its own floor to stay legible,
-       whatever the piece underneath is doing. See §12.4.4. */
+       whatever the piece underneath is doing. See §12.4.4.
+       The stop at 55% matters as much as the strength: a pale photograph, or
+       the placeholder shown for a piece with no cover yet, leaves white text
+       on near-white unless the dark reaches past the first line. */
     .overlay-scrim {
         background: linear-gradient(0deg,
-            color-mix(in srgb, var(--color-ink) 78%, transparent) 0%,
-            color-mix(in srgb, var(--color-ink) 45%, transparent) 42%,
+            color-mix(in srgb, var(--color-ink) 90%, transparent) 0%,
+            color-mix(in srgb, var(--color-ink) 70%, transparent) 55%,
             transparent 100%);
     }
 }
