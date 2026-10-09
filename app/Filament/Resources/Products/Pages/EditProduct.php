@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Products\Pages;
 
+use App\Enums\ProductStatus;
 use App\Filament\Concerns\PutsFormActionsInHeader;
 use App\Filament\Resources\Products\Pages\Concerns\HandlesProductTranslation;
 use App\Filament\Resources\Products\ProductResource;
@@ -32,6 +33,40 @@ class EditProduct extends EditRecord
             ForceDeleteAction::make(),
             RestoreAction::make(),
         ];
+    }
+
+    /**
+     * Save, plus a one-press publish while the product is still a draft.
+     *
+     * The alternative is: change the select, then press save. Two steps for
+     * the single most common thing done on this page.
+     *
+     * @return array<Action>
+     */
+    protected function getSaveActions(): array
+    {
+        /** @var Product $product */
+        $product = $this->record;
+
+        $actions = $this->defaultSaveActions();
+
+        if ($product->status !== ProductStatus::Draft) {
+            return $actions;
+        }
+
+        $actions[] = Action::make('publish')
+            ->label('Publish product')
+            ->requiresConfirmation()
+            ->modalHeading('Publish this product?')
+            ->modalDescription(fn (): string => $product->files()->count() === 0
+                ? 'There are no files attached yet, so it will show as "Soon" and cannot be bought.'
+                : 'It will appear in the shop straight away.')
+            ->action(function (): void {
+                $this->data['status'] = ProductStatus::Published->value;
+                $this->save();
+            });
+
+        return $actions;
     }
 
     /**

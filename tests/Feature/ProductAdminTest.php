@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\User;
 use Database\Seeders\AttributeSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Collection;
 
 use function Pest\Livewire\livewire;
 
@@ -145,18 +146,89 @@ it('puts the save buttons in the header, not below the fold', function (): void 
     $header = collect((fn () => $this->getHeaderActions())->call($page))
         ->map(fn ($action): string => $action->getName());
 
-    expect($header)->toContain('create');
+    // Two answers instead of a dropdown and a generic Create.
+    expect($header)->toContain('saveAsDraft')->toContain('publish');
 });
 
-it('keeps the record actions alongside the save when editing', function (): void {
-    $product = Product::factory()->create();
+/** The header action names for a product in a given state. */
+function headerActionsFor(Product $product): Collection
+{
     $page = new EditProduct;
     $page->record = $product;
 
-    $names = collect((fn () => $this->getHeaderActions())->call($page))
+    return collect((fn () => $this->getHeaderActions())->call($page))
         ->map(fn ($action): string => $action->getName());
+}
 
-    // Delete first, save last: the primary button is always rightmost.
+it('offers one-press publish while a product is still a draft', function (): void {
+    $names = headerActionsFor(Product::factory()->create(['status' => ProductStatus::Draft]));
+
+    // Delete first, the primary last: on a draft that is Publish, because
+    // the alternative is change the select, then press save.
     expect($names)->toContain('delete')->toContain('save')
+        ->and($names->last())->toBe('publish');
+});
+
+it('drops the publish button once the product is published', function (): void {
+    $names = headerActionsFor(Product::factory()->create(['status' => ProductStatus::Published]));
+
+    expect($names)->not->toContain('publish')
         ->and($names->last())->toBe('save');
+});
+
+it('lands on the edit page after creating, where the artwork is', function (): void {
+    $style = Attribute::where('key', 'style')->first()->values()->first();
+
+    livewire(CreateProduct::class)
+        ->fillForm([
+            'title' => 'Sunset Geometry',
+            'price_cents' => '7.99',
+            'type' => 'single',
+            'attr_style' => $style->id,
+        ])
+        ->callAction('saveAsDraft')
+        ->assertHasNoFormErrors();
+
+    $product = Product::firstOrFail();
+
+    // Relation managers need a saved record, so there is nothing to upload
+    // to on the create page. Landing on the index would leave a product with
+    // no image and no hint of where to add one.
+    expect($product->status)->toBe(ProductStatus::Draft);
+
+    $this->get(EditProduct::getUrl(['record' => $product]))
+        ->assertOk()
+        ->assertSee('Artwork')
+        ->assertSee('Files');
+});
+
+it('publishes straight from the create form', function (): void {
+    $style = Attribute::where('key', 'style')->first()->values()->first();
+
+    livewire(CreateProduct::class)
+        ->fillForm([
+            'title' => 'Botanical Silhouette',
+            'price_cents' => '5.99',
+            'type' => 'single',
+            'attr_style' => $style->id,
+        ])
+        ->callAction('publish')
+        ->assertHasNoFormErrors();
+
+    $product = Product::firstOrFail();
+
+    // The visibleIn scope needs published_at, so a null one would hide the
+    // product forever however green its badge looked.
+    expect($product->status)->toBe(ProductStatus::Published)
+        ->and($product->published_at)->not->toBeNull();
+});
+
+it('says where the artwork is while creating, and not after', function (): void {
+    // Without a word here, a create page with no upload box reads as a
+    // missing feature rather than a next step.
+    $this->get(CreateProduct::getUrl())->assertOk()->assertSee('Artwork and files');
+
+    $this->get(EditProduct::getUrl(['record' => Product::factory()->create()]))
+        ->assertOk()
+        ->assertDontSee('Saving this takes you straight to');
 });

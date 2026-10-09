@@ -41,12 +41,30 @@ trait PutsFormActionsInHeader
         return [];
     }
 
-    /** @return array<Action> */
+    /**
+     * What a page overrides to offer something other than a plain Save.
+     *
+     * @return array<Action>
+     */
     protected function getSaveActions(): array
     {
-        // Filament orders these primary-first, which is right at the foot of
-        // a form and backwards in a header: there the rightmost button is the
-        // one the eye lands on. Reversed, Cancel leads and Save closes.
+        return $this->defaultSaveActions();
+    }
+
+    /**
+     * Filament's own buttons, reordered.
+     *
+     * It lists them primary-first, which is right at the foot of a form and
+     * backwards in a header: there the rightmost button is the one the eye
+     * lands on. Reversed, Cancel leads and Save closes.
+     *
+     * Separate from getSaveActions() so an override can still reach them —
+     * parent:: would look past the trait at a class that has neither.
+     *
+     * @return array<Action>
+     */
+    protected function defaultSaveActions(): array
+    {
         return array_reverse(parent::getFormActions());
     }
 }

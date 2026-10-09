@@ -12,11 +12,13 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
 
 /**
  * Two columns, the way WordPress lays out a post: the wide column is what you
@@ -45,6 +47,7 @@ class ProductForm
                 Group::make()->columnSpan(['default' => 12, 'lg' => 8])->schema([
                     self::contentSection(),
                     self::pricingSection(),
+                    self::nextStepSection(),
                 ]),
 
                 Group::make()->columnSpan(['default' => 12, 'lg' => 4])->schema([
@@ -106,6 +109,26 @@ class ProductForm
     }
 
     // ── Sidebar ──────────────────────────────────────────────────────────
+
+    /**
+     * Says where the artwork went.
+     *
+     * Uploads live in relation managers, which need a saved record, so on the
+     * create page there is nothing to drop a file onto. Without a word here
+     * that reads as a missing feature rather than a next step.
+     */
+    private static function nextStepSection(): Section
+    {
+        return Section::make('Artwork and files')
+            ->icon(Heroicon::OutlinedPhoto)
+            ->visible(fn (string $operation): bool => $operation === 'create')
+            ->schema([
+                TextEntry::make('next_step')
+                    ->hiddenLabel()
+                    ->state('Saving this takes you straight to the page where you upload them. '
+                        .'Both need the product to exist first, so they cannot live on this screen.'),
+            ]);
+    }
 
     private static function publishSection(): Section
     {
