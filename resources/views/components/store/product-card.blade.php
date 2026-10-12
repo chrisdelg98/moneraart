@@ -1,4 +1,9 @@
-@props(['product'])
+@props([
+    'product',
+    // The first row of a grid is on screen before anything scrolls, and a
+    // lazy image there is the largest thing on the page arriving late.
+    'eager' => false,
+])
 
 @php
     $t = $product->translate();
@@ -14,7 +19,7 @@
 --}}
 <article {{ $attributes->class(['group relative flex h-full flex-col border rule bg-paper']) }}>
     <div class="relative overflow-hidden">
-        <x-store.artwork :image="$product->coverImage" :title="$t->title"
+        <x-store.artwork :image="$product->coverImage" :title="$t->title" :eager="$eager"
                          sizes="(max-width: 359px) 100vw, (max-width: 767px) 50vw, (max-width: 1279px) 33vw, 320px"
                          class="aspect-5/4 w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
     </div>

@@ -11,7 +11,10 @@
     <ul class="grid grid-cols-2 gap-x-4 gap-y-8 max-[359px]:grid-cols-1 sm:gap-x-6 sm:gap-y-10 md:grid-cols-3">
         @foreach ($products as $product)
             <li>
-                <x-store.product-card :product="$product" />
+                {{-- Three: the widest the grid ever gets, so the first row
+                     is covered at every breakpoint and nothing below it is
+                     fetched before the browser knows it is needed. --}}
+                <x-store.product-card :product="$product" :eager="$loop->index < 3" />
             </li>
         @endforeach
     </ul>

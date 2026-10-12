@@ -69,3 +69,12 @@ it('only promises HSTS where HTTPS is actually in use', function (): void {
     // Announcing it over plain HTTP tells a browser to refuse the site.
     expect($this->get('/')->headers->get('Strict-Transport-Security'))->toBeNull();
 });
+
+it('allows images from where they are actually served', function (): void {
+    $csp = $this->get('/')->headers->get('Content-Security-Policy');
+
+    // Artwork URLs are absolute, built from the configured disk URL. Reaching
+    // the site on 127.0.0.1 while APP_URL says localhost is enough for 'self'
+    // to block every image — and R2 will not be our origin at all.
+    expect($csp)->toContain(parse_url((string) config('app.url'), PHP_URL_HOST));
+});

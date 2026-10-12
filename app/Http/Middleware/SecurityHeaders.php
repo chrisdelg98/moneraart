@@ -68,6 +68,7 @@ class SecurityHeaders
     private function policy(string $nonce): string
     {
         $paypal = 'https://www.paypal.com https://www.paypalobjects.com';
+        $assets = $this->assetOrigins();
 
         return collect([
             "default-src 'self'",
@@ -81,7 +82,7 @@ class SecurityHeaders
             // style attribute, so attributes have to be allowed. Stylesheets
             // themselves stay restricted to our own origin.
             "style-src 'self' 'unsafe-inline'",
-            "img-src 'self' data: {$paypal}",
+            "img-src 'self' data: {$assets} {$paypal}",
             "font-src 'self'",
             "connect-src 'self' {$paypal}",
             // PayPal renders its buttons in an iframe of its own.
@@ -90,6 +91,37 @@ class SecurityHeaders
             // form could post a customer's address somewhere we do not own.
             "form-action 'self' {$paypal}",
         ])->implode('; ');
+    }
+
+    /**
+     * Where images actually come from.
+     *
+     * 'self' is the origin of the document, and artwork URLs are absolute,
+     * built from the configured app and disk URLs. Reach the site on a host
+     * that differs from those by so much as 127.0.0.1 against localhost and
+     * every image is blocked.
+     *
+     * It is also what keeps this working when the files move to R2, which
+     * serves them from an origin that is not ours at all.
+     */
+    private function assetOrigins(): string
+    {
+        return collect([
+            config('app.url'),
+            config('filesystems.disks.public.url'),
+            config('filesystems.disks.r2.url'),
+        ])
+            ->filter(fn ($url): bool => is_string($url) && $url !== '')
+            ->map(function (string $url): ?string {
+                $parts = parse_url($url);
+
+                return isset($parts['scheme'], $parts['host'])
+                    ? $parts['scheme'].'://'.$parts['host'].(isset($parts['port']) ? ':'.$parts['port'] : '')
+                    : null;
+            })
+            ->filter()
+            ->unique()
+            ->implode(' ');
     }
 
     private function isAdmin(Request $request): bool

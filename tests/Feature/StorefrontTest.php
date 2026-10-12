@@ -211,3 +211,21 @@ it('trims and caps what comes back out of the query string', function (): void {
         ->assertOk()
         ->assertViewHas('query', str_repeat('a', 64));
 });
+
+it('loads the first row of the shop eagerly and the rest on demand', function (): void {
+    Storage::fake('public');
+
+    // Real covers: without one the component renders its placeholder, which
+    // is a div and carries no loading hint at all.
+    foreach (range(1, 4) as $i) {
+        $product = Product::factory()->published()->withTranslation('en')->create();
+        app(ImagePipeline::class)->process($product, artwork(600, 480), isCover: true);
+    }
+
+    $html = $this->get(route('shop'))->assertOk()->getContent();
+
+    // A lazy image in the first row is the largest thing on the page
+    // arriving late, which is the one case lazy loading makes worse.
+    expect(substr_count($html, 'fetchpriority="high"'))->toBe(3)
+        ->and(substr_count($html, 'loading="lazy"'))->toBe(1);
+});
