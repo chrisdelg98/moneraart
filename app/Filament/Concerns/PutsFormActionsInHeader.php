@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Filament\Concerns;
 
 use Filament\Actions\Action;
+use Filament\Resources\Pages\CreateRecord;
+use Filament\Resources\Pages\EditRecord;
 use Filament\Resources\Pages\Page;
 
 /**
@@ -65,6 +67,45 @@ trait PutsFormActionsInHeader
      */
     protected function defaultSaveActions(): array
     {
-        return array_reverse(parent::getFormActions());
+        return array_map(
+            $this->callableOutsideTheForm(...),
+            array_reverse(parent::getFormActions()),
+        );
+    }
+
+    /**
+     * Rebinds a submit button to the method it was going to submit to.
+     *
+     * Filament builds these to submit the surrounding <form>. In the header
+     * they are outside it, so the browser has nothing to submit and the button
+     * silently does nothing — while a test calling the Livewire method
+     * directly still passes. Pointing them at the method instead works from
+     * either place.
+     */
+    private function callableOutsideTheForm(Action $action): Action
+    {
+        $name = $action->getName();
+
+        // Written out rather than resolved from the name: a create page has
+        // no save() and an edit page has no create(), and this trait serves
+        // both. A dynamic call would be a crash waiting for whichever page
+        // gets a button it does not answer to.
+        if ($this instanceof CreateRecord) {
+            $page = $this;
+
+            return match ($name) {
+                'create' => $action->action(fn () => $page->create()),
+                'createAnother' => $action->action(fn () => $page->create(another: true)),
+                default => $action,
+            };
+        }
+
+        if ($this instanceof EditRecord && $name === 'save') {
+            $page = $this;
+
+            return $action->action(fn () => $page->save());
+        }
+
+        return $action;
     }
 }

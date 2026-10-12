@@ -32,7 +32,7 @@ it('stores a code uppercase however it was typed', function (): void {
             'applies_to' => CouponScope::All->value,
             'is_active' => true,
         ])
-        ->call('create')
+        ->callAction('create')
         ->assertHasNoFormErrors();
 
     // Lower case here would mean the storefront lookup never matches.
@@ -48,7 +48,7 @@ it('takes a fixed discount in money and stores it in cents', function (): void {
             'applies_to' => CouponScope::All->value,
             'is_active' => true,
         ])
-        ->call('create')
+        ->callAction('create')
         ->assertHasNoFormErrors();
 
     // The admin types dollars; nothing below this line ever sees a float.
@@ -60,7 +60,7 @@ it('round-trips a percentage without multiplying it by a hundred', function (): 
 
     livewire(EditCoupon::class, ['record' => $coupon->getRouteKey()])
         ->assertFormSet(['value' => '15'])
-        ->call('save')
+        ->callAction('save')
         ->assertHasNoFormErrors();
 
     expect($coupon->refresh()->value)->toBe(15);
@@ -71,7 +71,7 @@ it('round-trips a fixed amount as money', function (): void {
 
     livewire(EditCoupon::class, ['record' => $coupon->getRouteKey()])
         ->assertFormSet(['value' => '7.50'])
-        ->call('save')
+        ->callAction('save')
         ->assertHasNoFormErrors();
 
     expect($coupon->refresh()->value)->toBe(750);
@@ -87,7 +87,7 @@ it('refuses a duplicate code', function (): void {
             'value' => '10',
             'applies_to' => CouponScope::All->value,
         ])
-        ->call('create')
+        ->callAction('create')
         ->assertHasFormErrors(['code']);
 });
 
@@ -99,7 +99,7 @@ it('never lets a percentage exceed a hundred', function (): void {
             'value' => '150',
             'applies_to' => CouponScope::All->value,
         ])
-        ->call('create')
+        ->callAction('create')
         ->assertHasFormErrors(['value']);
 });
 
