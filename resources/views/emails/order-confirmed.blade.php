@@ -95,7 +95,10 @@
             </td></tr>
 
             <tr><td style="padding-top:20px;border-top:1px solid #E2DDD2;color:#595751;font-size:13px;line-height:1.6;">
-                Keep this email — it's your receipt. Digital files can't be
+                Keep this email — it's your receipt. Lost it? You can find this
+                order again at
+                <a href="{{ route('orders.find') }}" style="color:#B4552E;">{{ route('orders.find') }}</a>,
+                with no account to sign into. Digital files can't be
                 returned once they've been sent, which is why we say so before
                 you pay. If something isn't right, reply to this email and we'll
                 sort it out.

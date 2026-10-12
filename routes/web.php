@@ -11,6 +11,7 @@ use App\Http\Controllers\Storefront\CartController;
 use App\Http\Controllers\Storefront\CheckoutController;
 use App\Http\Controllers\Storefront\HomeController;
 use App\Http\Controllers\Storefront\LegalController;
+use App\Http\Controllers\Storefront\OrderLookupController;
 use App\Http\Controllers\Storefront\OrderSuccessController;
 use App\Http\Controllers\Storefront\ProductController;
 use App\Http\Controllers\Storefront\ShopController;
@@ -66,6 +67,25 @@ Route::get('/d/{token}', DownloadController::class)
 Route::post('/d/{grant:uuid}/renew', RenewDownloadController::class)
     ->middleware('throttle:3,60')
     ->name('download.renew');
+
+/*
+ * Passwordless order lookup. The answer always arrives by email, so the page
+ * itself reveals nothing and can be left open. See §8.7.
+ */
+Route::get('/orders', [OrderLookupController::class, 'show'])->name('orders.find');
+
+// Tight: this endpoint is the one that sends mail on a stranger's say-so.
+Route::post('/orders', [OrderLookupController::class, 'send'])
+    ->middleware('throttle:5,60')
+    ->name('orders.find.send');
+
+Route::get('/orders/{customer:uuid}', [OrderLookupController::class, 'history'])
+    ->middleware('signed')
+    ->name('orders.history');
+
+Route::post('/orders/{order:uuid}/resend', [OrderLookupController::class, 'resend'])
+    ->middleware(['signed', 'throttle:10,60'])
+    ->name('orders.resend');
 
 Route::post('/checkout/free', FreeCheckoutController::class)
     ->middleware('throttle:10,60')

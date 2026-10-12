@@ -156,6 +156,9 @@
                 <nav aria-label="Footer" class="flex flex-wrap items-center gap-x-4 gap-y-3 text-sm sm:pt-14">
                     @foreach ([
                         [route('shop'), 'Shop'],
+                        // Quiet, but present. Someone looking for a lost
+                        // purchase looks in the footer before they email you.
+                        [route('orders.find'), 'Your orders'],
                         [route('legal', 'how-we-work'), 'About'],
                         [route('legal', 'terms'), 'Terms'],
                         [route('legal', 'privacy'), 'Privacy'],
