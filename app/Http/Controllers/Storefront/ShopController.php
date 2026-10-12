@@ -7,50 +7,65 @@ namespace App\Http\Controllers\Storefront;
 use App\Models\Attribute;
 use App\Models\AttributeValue;
 use App\Models\Product;
+use App\Services\Catalog\ProductSearch;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class ShopController
 {
-    public function __invoke(Request $request): View
+    public function __invoke(Request $request, ProductSearch $search): View
     {
-        $products = Product::visibleIn(app()->getLocale())
-            ->with(['translations', 'coverImage', 'attributeValues.attribute.values', 'attributeValues.translations'])
-            ->orderByDesc('published_at')
-            ->get();
+        $locale = app()->getLocale();
+        $facets = $this->facets($locale);
 
-        // Only values something actually uses: a filter for a style no product
-        // has is a dead end the visitor has to discover by clicking it.
-        $used = $products->flatMap->attributeValues->pluck('id')->unique();
+        $selected = $this->selectionFrom($request, $facets);
+        $query = ProductSearch::clean($request->query('q'));
 
-        $facets = Attribute::with(['values' => fn ($q) => $q->whereIn('id', $used)->with('translations')])
+        $products = $search->paginate($locale, $query, $selected);
+
+        return view('storefront.shop', [
+            'products' => $products,
+            'facets' => $facets,
+            'selected' => $selected,
+            'query' => $query,
+        ]);
+    }
+
+    /**
+     * The filter sidebar: only values something actually uses.
+     *
+     * Built from the whole catalogue rather than from the current results, so
+     * the sidebar does not collapse as you narrow and leave you nothing to
+     * widen back out with.
+     *
+     * @return Collection<string, EloquentCollection<int, AttributeValue>>
+     */
+    private function facets(string $locale): Collection
+    {
+        // One query for the ids in use, rather than loading every product to
+        // ask them. A filter for a style no product has is a dead end the
+        // visitor has to discover by clicking it.
+        $used = AttributeValue::query()
+            ->whereHas('products', fn ($q) => $q->visibleIn($locale))
+            ->pluck('id');
+
+        return Attribute::with(['values' => fn ($q) => $q->whereIn('id', $used)->with('translations')])
             ->whereIn('key', Attribute::MANUAL)
             ->orderBy('position')
             ->get()
             ->filter(fn (Attribute $a): bool => $a->values->isNotEmpty())
             ->mapWithKeys(fn (Attribute $a): array => [$a->key => $a->values]);
-
-        return view('storefront.shop', [
-            'products' => $products,
-            'facets' => $facets,
-            'selected' => $this->selectionFrom($request, $facets),
-            // Trimmed and capped: it goes straight back into the field, and a
-            // search box is not a place to paste a novel.
-            'query' => Str::limit(trim((string) $request->query('q', '')), 64, ''),
-        ]);
     }
 
     /**
      * Which facet boxes arrive already ticked.
      *
-     * A link from the home page's style tiles should land on the shop with the
-     * filter applied, not on the whole catalogue leaving the visitor to find it
-     * again. The values are intersected with the real ones, so the query string
-     * can only ever select a box that exists.
+     * The values are intersected with the real ones, so the query string can
+     * only ever select a box that exists — nothing typed into the URL reaches
+     * the query as itself.
      *
      * @param  Collection<string, EloquentCollection<int, AttributeValue>>  $facets
      * @return array<string, list<string>>
