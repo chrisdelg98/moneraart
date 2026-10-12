@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Customers\Tables;
 
+use App\Filament\Support\RowActions;
 use App\Models\Customer;
 use App\Support\BlindIndex;
 use App\Support\Money;
@@ -87,7 +88,7 @@ class CustomersTable
                     ->label('Returning customers')
                     ->query(fn (Builder $query) => $query->where('orders_count', '>', 1)),
             ])
-            ->recordActions([ViewAction::make()])
+            ->recordActions(RowActions::style([ViewAction::make()]))
             ->emptyStateHeading('No customers yet')
             ->emptyStateDescription('A customer record is created by the first order, never by hand.');
     }

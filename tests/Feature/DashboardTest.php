@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\OrderStatus;
+use App\Filament\Support\RowActions;
 use App\Filament\Widgets\NeedsAttention;
 use App\Filament\Widgets\RecentOrders;
 use App\Filament\Widgets\SchedulerHealth;
@@ -11,6 +12,7 @@ use App\Filament\Widgets\TopProducts;
 use App\Models\Order;
 use App\Models\User;
 use App\Models\WebhookEvent;
+use Filament\Actions\Action;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 
@@ -158,4 +160,18 @@ it('ranks products by what was actually paid this month', function (): void {
         ->assertSee('Art Deco Geometry No. 4')
         ->assertSee('$15.00')
         ->assertSee('1 sale');
+});
+
+it('renders row actions as buttons, not as more text in the row', function (): void {
+    // In a table of links, a bare "View" reads as another piece of data until
+    // it has been read. The outline says it does something first.
+    [$plain, $dangerous] = RowActions::style([
+        Action::make('view'),
+        Action::make('revoke')->color('danger'),
+    ]);
+
+    expect($plain->isButton())->toBeTrue()
+        ->and($plain->isOutlined())->toBeTrue()
+        // Colour is left alone, or setting danger would have been pointless.
+        ->and($dangerous->getColor())->toBe('danger');
 });

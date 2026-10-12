@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Categories\Tables;
 
+use App\Filament\Support\RowActions;
 use App\Models\Attribute;
 use App\Models\AttributeValue;
 use Filament\Actions\DeleteAction;
@@ -60,7 +61,7 @@ class CategoriesTable
                         ->pluck('label', 'id')
                         ->all()),
             ])
-            ->recordActions([
+            ->recordActions(RowActions::style([
                 EditAction::make(),
 
                 DeleteAction::make()
@@ -83,7 +84,7 @@ class CategoriesTable
 
                         $action->cancel();
                     }),
-            ])
+            ]))
             ->emptyStateHeading('No categories on this axis')
             ->emptyStateDescription('Add one and it becomes a filter in the shop as soon as artwork uses it.');
     }

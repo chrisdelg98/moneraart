@@ -6,6 +6,7 @@ namespace App\Filament\Resources\Products\RelationManagers;
 
 use App\Actions\Products\StoreProductFile;
 use App\Actions\Products\SyncComputedAttributes;
+use App\Filament\Support\RowActions;
 use App\Models\Product;
 use App\Models\ProductFile;
 use Filament\Actions\Action;
@@ -90,7 +91,7 @@ class FilesRelationManager extends RelationManager
                     ])
                     ->action(fn (array $data) => $this->storeUploads($data)),
             ])
-            ->recordActions([
+            ->recordActions(RowActions::style([
                 Action::make('download')
                     ->label('Download')
                     ->icon('heroicon-o-arrow-down-tray')
@@ -102,7 +103,7 @@ class FilesRelationManager extends RelationManager
 
                 DeleteAction::make()
                     ->after(fn () => $this->afterChange()),
-            ])
+            ]))
             ->emptyStateHeading('No files yet')
             ->emptyStateDescription('These are what the customer downloads after paying.');
     }

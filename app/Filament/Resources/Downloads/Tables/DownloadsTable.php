@@ -6,6 +6,7 @@ namespace App\Filament\Resources\Downloads\Tables;
 
 use App\Actions\Downloads\AdjustDownloadGrant;
 use App\Filament\Resources\Orders\OrderResource;
+use App\Filament\Support\RowActions;
 use App\Models\DownloadGrant;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
@@ -84,7 +85,7 @@ class DownloadsTable
                     ->label('Out of downloads')
                     ->query(fn (Builder $query) => $query->whereColumn('download_count', '>=', 'max_downloads')),
             ])
-            ->recordActions([
+            ->recordActions(RowActions::style([
                 self::extendAction(),
                 self::regenerateAction(),
                 self::revokeAction(),
@@ -95,7 +96,7 @@ class DownloadsTable
                     ->icon('heroicon-m-arrow-top-right-on-square')
                     ->color('gray')
                     ->url(fn (DownloadGrant $r): string => OrderResource::getUrl('view', ['record' => $r->order])),
-            ])
+            ]))
             ->emptyStateHeading('No downloads issued yet')
             ->emptyStateDescription('A link appears here the moment an order is paid for.');
     }

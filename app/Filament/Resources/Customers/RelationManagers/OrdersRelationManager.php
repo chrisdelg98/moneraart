@@ -6,6 +6,7 @@ namespace App\Filament\Resources\Customers\RelationManagers;
 
 use App\Enums\OrderStatus;
 use App\Filament\Resources\Orders\OrderResource;
+use App\Filament\Support\RowActions;
 use App\Models\Order;
 use Filament\Actions\Action;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -48,11 +49,11 @@ class OrdersRelationManager extends RelationManager
                     ->dateTime('j M Y, H:i')
                     ->sortable(),
             ])
-            ->recordActions([
+            ->recordActions(RowActions::style([
                 Action::make('open')
                     ->label('View')
                     ->url(fn (Order $record): string => OrderResource::getUrl('view', ['record' => $record])),
-            ])
+            ]))
             ->emptyStateHeading('No orders')
             ->emptyStateDescription('This address has been seen, but nothing has been bought with it.');
     }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\Products\Tables;
 
 use App\Enums\ProductStatus;
+use App\Filament\Support\RowActions;
 use App\Models\Product;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -83,9 +84,9 @@ class ProductsTable
                     ->options(collect(ProductStatus::cases())->mapWithKeys(fn ($s) => [$s->value => $s->label()])),
                 TrashedFilter::make(),
             ])
-            ->recordActions([
+            ->recordActions(RowActions::style([
                 EditAction::make(),
-            ])
+            ]))
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),

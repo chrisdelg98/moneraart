@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Coupons\Tables;
 
+use App\Filament\Support\RowActions;
 use App\Models\Coupon;
 use App\Support\Money;
 use Filament\Actions\BulkActionGroup;
@@ -81,7 +82,7 @@ class CouponsTable
                         ->where(fn (Builder $q) => $q->whereNull('usage_limit')
                             ->orWhereColumn('used_count', '<', 'usage_limit'))),
             ])
-            ->recordActions([EditAction::make()])
+            ->recordActions(RowActions::style([EditAction::make()]))
             ->toolbarActions([
                 BulkActionGroup::make([DeleteBulkAction::make()]),
             ])

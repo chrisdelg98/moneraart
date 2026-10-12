@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\AuditLogs\Tables;
 
+use App\Filament\Support\RowActions;
 use App\Models\AuditLog;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
@@ -84,7 +85,7 @@ class AuditLogsTable
                         ? 'Since '.$data['since']
                         : null),
             ])
-            ->recordActions([
+            ->recordActions(RowActions::style([
                 Action::make('details')
                     ->label('Details')
                     ->icon('heroicon-m-eye')
@@ -93,7 +94,7 @@ class AuditLogsTable
                     ->modalContent(fn (AuditLog $r) => view('filament.audit-log-details', ['entry' => $r]))
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel('Close'),
-            ])
+            ]))
             ->emptyStateHeading('Nothing recorded yet')
             ->emptyStateDescription('Revealing an address, approving an order or issuing a refund all land here.');
     }

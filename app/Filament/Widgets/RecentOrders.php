@@ -6,6 +6,7 @@ namespace App\Filament\Widgets;
 
 use App\Enums\OrderStatus;
 use App\Filament\Resources\Orders\OrderResource;
+use App\Filament\Support\RowActions;
 use App\Models\Order;
 use Filament\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
@@ -57,11 +58,11 @@ class RecentOrders extends TableWidget
                     ->label('Placed')
                     ->since(),
             ])
-            ->recordActions([
+            ->recordActions(RowActions::style([
                 Action::make('open')
                     ->label('View')
                     ->url(fn (Order $record): string => OrderResource::getUrl('view', ['record' => $record])),
-            ])
+            ]))
             ->emptyStateHeading('No orders yet')
             ->emptyStateDescription('The first one will appear here the moment it is paid.');
     }

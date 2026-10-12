@@ -6,6 +6,7 @@ namespace App\Filament\Widgets;
 
 use App\Enums\OrderStatus;
 use App\Filament\Resources\Orders\OrderResource;
+use App\Filament\Support\RowActions;
 use App\Models\Order;
 use Filament\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
@@ -61,11 +62,11 @@ class NeedsAttention extends TableWidget
                     ->since()
                     ->description(fn (Order $r): ?string => $r->paid_at?->format('j M, H:i')),
             ])
-            ->recordActions([
+            ->recordActions(RowActions::style([
                 Action::make('open')
                     ->label('Review')
                     ->url(fn (Order $record): string => OrderResource::getUrl('view', ['record' => $record])),
-            ]);
+            ]));
     }
 
     /** @return Builder<Order> */

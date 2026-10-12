@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\Products\RelationManagers;
 
 use App\Actions\Products\SyncComputedAttributes;
+use App\Filament\Support\RowActions;
 use App\Models\Product;
 use App\Models\ProductImage;
 use App\Services\Media\ImagePipeline;
@@ -100,7 +101,7 @@ class ImagesRelationManager extends RelationManager
                     ])
                     ->action(fn (array $data) => $this->storeUploads($data)),
             ])
-            ->recordActions([
+            ->recordActions(RowActions::style([
                 Action::make('makeCover')
                     ->label('Make cover')
                     ->icon('heroicon-o-star')
@@ -126,7 +127,7 @@ class ImagesRelationManager extends RelationManager
                 DeleteAction::make()
                     ->before(fn (ProductImage $record) => $this->deleteDerivatives($record))
                     ->after(fn () => $this->afterChange()),
-            ])
+            ]))
             ->emptyStateHeading('No artwork yet')
             ->emptyStateDescription('This is what customers see. The first image becomes the cover.');
     }

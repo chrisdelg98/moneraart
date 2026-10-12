@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\Orders\Tables;
 
 use App\Enums\OrderStatus;
+use App\Filament\Support\RowActions;
 use App\Models\Order;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
@@ -81,7 +82,7 @@ class OrdersTable
                     ->options(collect(OrderStatus::cases())
                         ->mapWithKeys(fn (OrderStatus $s) => [$s->value => $s->label()])),
             ])
-            ->recordActions([ViewAction::make()])
+            ->recordActions(RowActions::style([ViewAction::make()]))
             ->emptyStateHeading('No orders yet')
             ->emptyStateDescription('They appear here the moment someone buys.');
     }
