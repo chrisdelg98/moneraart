@@ -6,6 +6,7 @@ namespace App\Filament\Widgets;
 
 use App\Enums\OrderStatus;
 use App\Jobs\ReconcileStuckOrders;
+use App\Models\EmailEvent;
 use App\Models\Order;
 use App\Models\WebhookEvent;
 use Filament\Widgets\Widget;
@@ -33,7 +34,7 @@ class SchedulerHealth extends Widget
 
     public static function canView(): bool
     {
-        return self::stalePayments() > 0 || self::stuckOrders() > 0;
+        return self::stalePayments() > 0 || self::stuckOrders() > 0 || self::failedEmails() > 0;
     }
 
     /** @return array<int, array{title: string, body: string}> */
@@ -49,6 +50,14 @@ class SchedulerHealth extends Widget
             ];
         }
 
+        if (($emails = self::failedEmails()) > 0) {
+            $findings[] = [
+                'title' => $emails.' '.str('email')->plural($emails).' failed to send',
+                'body' => 'Someone who paid may be waiting on a message that never left. '
+                    .'Check the email log, and the SMTP settings it points at.',
+            ];
+        }
+
         if (($orders = self::stuckOrders()) > 0) {
             $findings[] = [
                 'title' => $orders.' '.str('order')->plural($orders).' left pending past the cut-off',
@@ -59,6 +68,21 @@ class SchedulerHealth extends Widget
         }
 
         return $findings;
+    }
+
+    /**
+     * Emails that did not go out in the last day.
+     *
+     * Every purchase here arrives by email, so a send that failed is the same
+     * to the customer as never having been sold anything — and until this
+     * existed it went into failed_jobs, where nobody looks.
+     */
+    private static function failedEmails(): int
+    {
+        return EmailEvent::query()
+            ->where('status', EmailEvent::FAILED)
+            ->where('created_at', '>=', now()->subDay())
+            ->count();
     }
 
     /**

@@ -10,6 +10,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Symfony\Component\Mime\Email;
 
 /**
  * The receipt, sent the moment a payment is verified.
@@ -47,7 +48,13 @@ class OrderConfirmed extends Notification implements ShouldQueue
                 // Paid but not fulfilled: the email has to say so plainly
                 // rather than promise files that are not coming yet.
                 'isHeld' => $this->order->status === OrderStatus::ManualReview,
-            ]);
+            ])
+            // Carried on the message so the email log can point back at the
+            // order: Laravel hands a listener the notification's class name
+            // and nothing else. Useful in a raw message too, when someone
+            // forwards one asking what it was about.
+            ->withSymfonyMessage(fn (Email $message) => $message->getHeaders()
+                ->addTextHeader('X-Monera-Order', $this->order->number));
     }
 
     public function routeNotificationForMail(object $notifiable): string

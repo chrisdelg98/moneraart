@@ -11,6 +11,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Collection;
+use Symfony\Component\Mime\Email;
 
 /**
  * The email that delivers the purchase.
@@ -45,7 +46,13 @@ class DownloadLinksReady extends Notification implements ShouldQueue
             ->view('emails.download-links', [
                 'order' => $this->order,
                 'grants' => $this->grants->each->loadMissing('file'),
-            ]);
+            ])
+            // Carried on the message so the email log can point back at the
+            // order: Laravel hands a listener the notification's class name
+            // and nothing else. Useful in a raw message too, when someone
+            // forwards one asking what it was about.
+            ->withSymfonyMessage(fn (Email $message) => $message->getHeaders()
+                ->addTextHeader('X-Monera-Order', $this->order->number));
     }
 
     public function routeNotificationForMail(object $notifiable): string

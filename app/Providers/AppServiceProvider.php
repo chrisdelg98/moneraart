@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Listeners\RecordEmailEvents;
 use App\Services\Settings\SettingsRepository;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Mail\Events\MessageSent;
+use Illuminate\Notifications\Events\NotificationFailed;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -23,6 +27,12 @@ class AppServiceProvider extends ServiceProvider
     {
         Model::shouldBeStrict(! $this->app->isProduction());
         Model::unguard(false);
+
+        // Laravel announces both outcomes already; until now nothing listened,
+        // so a message SMTP rejected went into failed_jobs and nowhere a
+        // person looks. See §15.
+        Event::listen(MessageSent::class, [RecordEmailEvents::class, 'sent']);
+        Event::listen(NotificationFailed::class, [RecordEmailEvents::class, 'failed']);
 
         if (! $this->app->isProduction()) {
             // Surface N+1 queries and slow requests in development, where they
