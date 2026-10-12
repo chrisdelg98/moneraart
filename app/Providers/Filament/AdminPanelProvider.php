@@ -10,6 +10,7 @@ use App\Filament\Widgets\RecentOrders;
 use App\Filament\Widgets\SchedulerHealth;
 use App\Filament\Widgets\StoreOverview;
 use App\Filament\Widgets\TopProducts;
+use App\Http\Middleware\SecurityHeaders;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -74,6 +75,9 @@ class AdminPanelProvider extends PanelProvider
                 TopProducts::class,
             ])
             ->middleware([
+                // The panel runs its own stack rather than the web group, so
+                // without this it would get no security headers at all.
+                SecurityHeaders::class,
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,

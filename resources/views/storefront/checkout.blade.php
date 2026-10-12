@@ -173,7 +173,7 @@
     {{-- The coupon field, on both paths: a code can apply to a free cart's
          sibling just as well as to a paid one, and this script is the only
          thing on the page that is not about taking money. --}}
-    <script>
+    <script nonce="{{ Vite::cspNonce() }}">
         (() => {
             const form = document.getElementById('checkout-form');
             const input = document.getElementById('coupon');
@@ -268,7 +268,7 @@
                     data-namespace="paypalSdk" defer></script>
         </x-slot:head>
 
-        <script>
+        <script nonce="{{ Vite::cspNonce() }}">
             document.addEventListener('DOMContentLoaded', () => {
                 const form = document.getElementById('checkout-form');
                 const errorBox = document.getElementById('checkout-error');

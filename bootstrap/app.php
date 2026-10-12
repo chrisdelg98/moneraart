@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SyncCartCountCookie;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -29,6 +30,10 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Last in the group, so the session is started and the cart readable.
         $middleware->web(append: [SyncCartCountCookie::class]);
+
+        // Prepended: the nonce has to exist before any view renders a tag
+        // that needs to carry it.
+        $middleware->web(prepend: [SecurityHeaders::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

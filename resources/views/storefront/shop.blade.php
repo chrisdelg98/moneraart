@@ -99,7 +99,7 @@
         </div>
     </div>
 
-    <script>
+    <script nonce="{{ Vite::cspNonce() }}">
         (() => {
             const form = document.getElementById('filters');
             if (!form) return;
