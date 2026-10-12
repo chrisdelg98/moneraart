@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class ShopController
@@ -37,6 +38,9 @@ class ShopController
             'products' => $products,
             'facets' => $facets,
             'selected' => $this->selectionFrom($request, $facets),
+            // Trimmed and capped: it goes straight back into the field, and a
+            // search box is not a place to paste a novel.
+            'query' => Str::limit(trim((string) $request->query('q', '')), 64, ''),
         ]);
     }
 

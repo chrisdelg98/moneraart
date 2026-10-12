@@ -24,7 +24,7 @@
         Skip to content
     </a>
 
-    <header class="border-b rule">
+    <header class="relative border-b rule">
         <div class="mx-auto flex max-w-[1400px] items-center justify-between gap-8 px-4 py-4 sm:px-8">
             <a href="{{ route('home') }}" class="font-display text-xl tracking-tight">
                 {{ \App\Support\Facades\Settings::get('store.name') }}
@@ -49,12 +49,61 @@
             </nav>
 
             <div class="flex items-center gap-5">
-                <a href="{{ route('shop') }}" class="hover:text-accent" aria-label="Search artwork">
-                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                         stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
-                        <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" />
-                    </svg>
-                </a>
+                {{--
+                    A <details> rather than a scripted panel: the disclosure,
+                    the keyboard handling and the open state are the browser's,
+                    and the form inside submits with JavaScript off. A magnifier
+                    that only navigates to the shop is a promise it does not
+                    keep, and teaches people to distrust the rest.
+                --}}
+                <details class="search-pop" data-search>
+                    <summary class="flex cursor-pointer list-none items-center hover:text-accent"
+                             aria-label="Search artwork">
+                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+                            <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" />
+                        </svg>
+                    </summary>
+
+                    {{-- A band across the full width rather than a card
+                         floating over the page: it reads as the header
+                         continuing, which is the only way a search bar sitting
+                         under a header has ever looked right. --}}
+                    <form action="{{ route('shop') }}" method="GET" role="search"
+                          class="search-bar absolute inset-x-0 top-full z-40 bg-paper">
+                        <div class="mx-auto flex max-w-[1400px] items-center gap-3 px-4 sm:px-8">
+                            <svg class="h-5 w-5 shrink-0 text-muted" viewBox="0 0 24 24" fill="none"
+                                 stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+                                <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" />
+                            </svg>
+
+                            <label for="site-search" class="sr-only">Search artwork</label>
+
+                            <input type="search" id="site-search" name="q" autocomplete="off"
+                                   placeholder="coffee bar, retro&hellip;"
+                                   class="w-full border-0 bg-transparent py-4 text-base">
+
+                            {{-- A filled button, like every other action on
+                                 the site. The .label class means caption here,
+                                 and nothing happens until this is pressed, so
+                                 it has to look pressable. --}}
+                            <button type="submit"
+                                    class="btn-accent shrink-0 px-5 py-2.5 text-sm">
+                                Search
+                                <span aria-hidden="true" class="ms-1.5">&rarr;</span>
+                            </button>
+
+                            <button type="button" data-search-close
+                                    class="-mr-2 flex h-9 w-9 shrink-0 items-center justify-center text-muted hover:text-ink"
+                                    aria-label="Close search">
+                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                     stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+                                    <path d="m6 6 12 12M18 6 6 18" />
+                                </svg>
+                            </button>
+                        </div>
+                    </form>
+                </details>
 
                 <a href="{{ route('cart') }}" class="relative hover:text-accent" aria-label="Cart">
                     <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"

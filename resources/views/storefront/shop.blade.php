@@ -49,6 +49,7 @@
                         <div class="p-5 lg:p-0">
                             <label for="q" class="label">Search</label>
                             <input type="search" id="q" name="q" autocomplete="off"
+                                   value="{{ $query }}"
                                    placeholder="coffee bar, retro&hellip;"
                                    class="mt-2 w-full border rule bg-transparent px-3 py-2 text-sm">
 
@@ -196,9 +197,10 @@
 
             form.addEventListener('change', apply);
 
-            // A visitor arriving from a style tile has boxes already ticked, so
-            // the grid has to agree with them before anyone touches anything.
-            if (form.querySelector('[data-facet]:checked')) {
+            // A visitor arriving from a style tile or the header search has the
+            // form already filled in, so the grid has to agree with it before
+            // anyone touches anything.
+            if (search.value || form.querySelector('[data-facet]:checked')) {
                 apply();
             }
             document.getElementById('clear-filters').addEventListener('click', clear);

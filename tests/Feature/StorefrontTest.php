@@ -185,3 +185,29 @@ it('offers only styles that have artwork to show', function (): void {
         ->assertSee($styles->first()->label('en'))
         ->assertDontSee($styles->last()->label('en'));
 });
+
+it('offers a search that actually searches', function (): void {
+    // The magnifier used to be a link to the shop: a promise it did not keep.
+    $this->get('/')->assertOk()
+        ->assertSee('name="q"', escape: false)
+        ->assertSee('action="'.route('shop').'"', escape: false);
+});
+
+it('arrives at the shop with the search term already in the box', function (): void {
+    Product::factory()->published()->withTranslation('en')->create();
+
+    $this->get(route('shop', ['q' => 'retro']))
+        ->assertOk()
+        ->assertViewHas('query', 'retro')
+        ->assertSee('value="retro"', escape: false);
+});
+
+it('trims and caps what comes back out of the query string', function (): void {
+    Product::factory()->published()->withTranslation('en')->create();
+
+    // It goes straight back into the field, so it is not a place to paste
+    // a novel into.
+    $this->get(route('shop', ['q' => '  '.str_repeat('a', 200).'  ']))
+        ->assertOk()
+        ->assertViewHas('query', str_repeat('a', 64));
+});

@@ -488,3 +488,44 @@
         }
     }
 }
+
+@layer components {
+    /* Safari still paints a disclosure triangle without this, and list-none
+       alone does not reach it. */
+    .search-pop > summary::-webkit-details-marker {
+        display: none;
+    }
+
+    /*
+     * The search band.
+     *
+     * The rule underneath carries the focus state for the whole bar, so the
+     * field itself needs no border and no outline of its own. A 2px outline
+     * drawn around an input that shares a border with its button cuts through
+     * both and looks broken — which is why §12.4.1 says never outline: none
+     * without putting something clearer in its place. This is clearer: the
+     * indicator is the width of the page.
+     */
+    .search-bar {
+        box-shadow: inset 0 -1px 0 var(--color-rule);
+    }
+
+    .search-bar:focus-within {
+        box-shadow: inset 0 -2px 0 var(--color-accent);
+    }
+
+    .search-bar input:focus,
+    .search-bar input:focus-visible {
+        outline: none;
+    }
+
+    /* Safari and Chrome draw their own clear button, in their own grey. */
+    .search-bar input::-webkit-search-cancel-button {
+        -webkit-appearance: none;
+    }
+
+    /* The browser's own placeholder grey reads blue against warm paper. */
+    .search-bar input::placeholder {
+        color: color-mix(in srgb, var(--color-muted) 70%, transparent);
+    }
+}

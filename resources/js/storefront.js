@@ -106,3 +106,46 @@ function setUpToast() {
 }
 
 document.addEventListener('DOMContentLoaded', setUpToast);
+
+/**
+ * The header search panel.
+ *
+ * <details> gives us the disclosure for free but keeps itself open when the
+ * click lands elsewhere, so a panel left hanging over the page is the one
+ * thing the browser does not handle.
+ */
+function setUpSearchPanel() {
+    const panel = document.querySelector('[data-search]');
+
+    if (!panel) {
+        return;
+    }
+
+    const close = () => { panel.open = false; };
+
+    panel.addEventListener('toggle', () => {
+        if (panel.open) {
+            panel.querySelector('input')?.focus();
+        }
+    });
+
+    panel.querySelector('[data-search-close]')?.addEventListener('click', () => {
+        close();
+        panel.querySelector('summary')?.focus();
+    });
+
+    document.addEventListener('click', (e) => {
+        if (panel.open && !panel.contains(e.target)) {
+            close();
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && panel.open) {
+            close();
+            panel.querySelector('summary')?.focus();
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', setUpSearchPanel);
