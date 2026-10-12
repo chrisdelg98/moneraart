@@ -1,4 +1,6 @@
-<x-layouts.storefront :title="'Order '.$order->number">
+@php $meta = app(App\Services\Seo\SeoGenerator::class)->forPage('Order '.$order->number, indexable: false); @endphp
+
+<x-layouts.storefront :title="'Order '.$order->number" :meta="$meta">
     <x-slot:head>
         {{-- Never indexed, never cached: it is one customer's receipt. --}}
         <meta name="robots" content="noindex, nofollow">

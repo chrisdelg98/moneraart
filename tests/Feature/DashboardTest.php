@@ -9,6 +9,7 @@ use App\Filament\Widgets\RecentOrders;
 use App\Filament\Widgets\SchedulerHealth;
 use App\Filament\Widgets\StoreOverview;
 use App\Filament\Widgets\TopProducts;
+use App\Filament\Widgets\TwoFactorNotice;
 use App\Models\Order;
 use App\Models\User;
 use App\Models\WebhookEvent;
@@ -174,4 +175,15 @@ it('renders row actions as buttons, not as more text in the row', function (): v
         ->and($plain->isOutlined())->toBeTrue()
         // Colour is left alone, or setting danger would have been pointless.
         ->and($dangerous->getColor())->toBe('danger');
+});
+
+it('says the admin is protected by one password, until it is not', function (): void {
+    // Optional by decision, so it nags rather than blocks — and the notice
+    // goes the day two-factor is switched on.
+    expect(TwoFactorNotice::isEnabled())->toBeFalse()
+        ->and(TwoFactorNotice::canView())->toBeTrue();
+
+    livewire(TwoFactorNotice::class)
+        ->assertSee('Two-factor authentication is off')
+        ->assertSee('customer addresses');
 });

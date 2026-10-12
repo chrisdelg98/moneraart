@@ -1,5 +1,6 @@
-<x-layouts.storefront title="Download link">
-    <x-slot:head><meta name="robots" content="noindex, nofollow"></x-slot:head>
+@php $meta = app(App\Services\Seo\SeoGenerator::class)->forPage('Download link', indexable: false); @endphp
+
+<x-layouts.storefront title="Download link" :meta="$meta">
 
     <div class="mx-auto max-w-[640px] px-4 py-24 sm:px-8">
         @if ($reason === 'expired')

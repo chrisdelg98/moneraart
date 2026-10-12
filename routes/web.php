@@ -15,6 +15,7 @@ use App\Http\Controllers\Storefront\OrderLookupController;
 use App\Http\Controllers\Storefront\OrderSuccessController;
 use App\Http\Controllers\Storefront\ProductController;
 use App\Http\Controllers\Storefront\ShopController;
+use App\Http\Controllers\Storefront\SitemapController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -67,6 +68,11 @@ Route::get('/d/{token}', DownloadController::class)
 Route::post('/d/{grant:uuid}/renew', RenewDownloadController::class)
     ->middleware('throttle:3,60')
     ->name('download.renew');
+
+// Generated rather than kept as files: a product published this morning is
+// in the sitemap this morning. See §11.5.
+Route::get('/sitemap.xml', [SitemapController::class, 'sitemap'])->name('sitemap');
+Route::get('/robots.txt', [SitemapController::class, 'robots'])->name('robots');
 
 /*
  * Passwordless order lookup. The answer always arrives by email, so the page

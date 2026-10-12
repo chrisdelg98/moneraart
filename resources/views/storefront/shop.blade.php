@@ -1,4 +1,4 @@
-<x-layouts.storefront title="Shop">
+<x-layouts.storefront title="Shop" :meta="$meta">
     <section class="band border-b rule">
         <div class="mx-auto max-w-[1400px] px-4 py-12 sm:px-8 lg:py-14">
             <h1 class="text-4xl sm:text-5xl">Shop</h1>

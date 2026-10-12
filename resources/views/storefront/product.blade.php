@@ -4,7 +4,7 @@
     $buyable = $product->file_count > 0;
 @endphp
 
-<x-layouts.storefront :title="$translation->title" :description="Str::limit(strip_tags((string) $translation->description), 155)">
+<x-layouts.storefront :title="$translation->title" :meta="$meta">
 
     <nav aria-label="Breadcrumb" class="mx-auto max-w-[1400px] px-4 pt-6 text-sm sm:px-8">
         <ol class="flex items-center gap-2 text-muted">

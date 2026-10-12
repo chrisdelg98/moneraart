@@ -8,6 +8,7 @@ use App\Models\Attribute;
 use App\Models\AttributeValue;
 use App\Models\Product;
 use App\Services\Catalog\ProductSearch;
+use App\Services\Seo\SeoGenerator;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -16,7 +17,7 @@ use Illuminate\View\View;
 
 class ShopController
 {
-    public function __invoke(Request $request, ProductSearch $search): View
+    public function __invoke(Request $request, ProductSearch $search, SeoGenerator $seo): View
     {
         $locale = app()->getLocale();
         $facets = $this->facets($locale);
@@ -31,6 +32,7 @@ class ShopController
             'facets' => $facets,
             'selected' => $selected,
             'query' => $query,
+            'meta' => $seo->forShop($query, $selected, (int) $request->query('page', 1)),
         ]);
     }
 

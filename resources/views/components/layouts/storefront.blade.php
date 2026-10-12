@@ -1,18 +1,22 @@
+@props([
+    'title' => null,
+    // Declared, because a component has its own scope: a $meta sitting in the
+    // page's variables never reaches here, and the head silently fell back to
+    // a generated default for every page that thought it had set one.
+    'meta' => null,
+])
+
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ $title ?? config('app.name') }}</title>
-
-    @isset($description)
-        <meta name="description" content="{{ $description }}">
-    @endisset
-
-    {{-- Kept off search engines until the owner turns indexing on (§11.5). --}}
-    @unless(\App\Support\Facades\Settings::get('seo.allow_indexing'))
-        <meta name="robots" content="noindex, nofollow">
-    @endunless
+    {{-- A page that passes $meta describes itself properly; one that passes
+         only a title still gets a generated description and the store's own
+         indexing rule, rather than a blank head. --}}
+    <x-seo.head :meta="$meta ?? app(\App\Services\Seo\SeoGenerator::class)->forPage(
+        $title ?? config('app.name'),
+    )" />
 
     @vite(['resources/css/storefront.css', 'resources/js/storefront.js'])
     {{ $head ?? '' }}

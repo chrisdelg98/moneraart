@@ -10,6 +10,7 @@ use App\Filament\Widgets\RecentOrders;
 use App\Filament\Widgets\SchedulerHealth;
 use App\Filament\Widgets\StoreOverview;
 use App\Filament\Widgets\TopProducts;
+use App\Filament\Widgets\TwoFactorNotice;
 use App\Http\Middleware\SecurityHeaders;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -69,6 +70,7 @@ class AdminPanelProvider extends PanelProvider
             // is installed. Neither is news to the one person using this.
             ->widgets([
                 SchedulerHealth::class,
+                TwoFactorNotice::class,
                 StoreOverview::class,
                 NeedsAttention::class,
                 RecentOrders::class,

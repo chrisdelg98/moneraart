@@ -1,4 +1,8 @@
-<x-layouts.storefront title="Find your orders">
+{{-- Never indexed: a cart in search results is somebody else's
+     cart as far as a crawler is concerned. --}}
+@php $meta = app(App\Services\Seo\SeoGenerator::class)->forPage('Find your orders', indexable: false); @endphp
+
+<x-layouts.storefront title="Find your orders" :meta="$meta">
     <section class="band border-b rule">
         <div class="mx-auto max-w-[1100px] px-4 py-12 sm:px-8 lg:py-14">
             <h1 class="text-4xl sm:text-5xl">Your orders</h1>

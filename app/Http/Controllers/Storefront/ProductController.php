@@ -8,12 +8,16 @@ use App\Enums\ProductStatus;
 use App\Models\Product;
 use App\Models\ProductTranslation;
 use App\Services\Cart\CartService;
+use App\Services\Seo\SeoGenerator;
 use Illuminate\View\View;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class ProductController
 {
-    public function __construct(private readonly CartService $cart) {}
+    public function __construct(
+        private readonly CartService $cart,
+        private readonly SeoGenerator $seo,
+    ) {}
 
     public function __invoke(string $slug): View
     {
@@ -51,6 +55,7 @@ class ProductController
             'product' => $product,
             'translation' => $translation,
             'related' => $related,
+            'meta' => $this->seo->forProduct($product, $locale),
             // The one page that states cart membership. It costs this page the
             // byte-identical HTML the catalogue keeps for caching, which is
             // the trade for a buy button that knows what it already holds.
