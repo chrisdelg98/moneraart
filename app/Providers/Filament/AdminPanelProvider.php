@@ -12,6 +12,7 @@ use App\Filament\Widgets\StoreOverview;
 use App\Filament\Widgets\TopProducts;
 use App\Filament\Widgets\TwoFactorNotice;
 use App\Http\Middleware\SecurityHeaders;
+use Filament\Auth\MultiFactor\App\AppAuthentication;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -37,6 +38,25 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->login()
+            // Reachable from the user menu: where the second factor is set up.
+            ->profile(isSimple: false)
+            /*
+             * Two-factor, available and off.
+             *
+             * Not required, deliberately. There is one operator, and forcing a
+             * factor nobody has set up yet is how a person locks themselves
+             * out of their own store. The dashboard carries a standing notice
+             * instead, and the day it is switched on the notice goes.
+             *
+             * Recoverable, because an authenticator lives on a phone and
+             * phones are lost. Eight codes, each good once.
+             */
+            ->multiFactorAuthentication(
+                AppAuthentication::make()
+                    ->recoverable()
+                    ->regenerableRecoveryCodes(),
+                isRequired: false,
+            )
             // The storefront's terracotta, so the two halves of the product
             // do not look like two products.
             ->colors([

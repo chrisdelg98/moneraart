@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Widgets;
 
+use App\Models\User;
 use Filament\Widgets\Widget;
 
 /**
@@ -30,11 +31,15 @@ class TwoFactorNotice extends Widget
     }
 
     /**
-     * Not built yet, and said in one place so the day it is, this widget and
-     * the privacy policy stop disagreeing with reality together.
+     * Whether the operator looking at this has actually turned it on.
+     *
+     * Per user, not per store: the notice is addressed to whoever is reading
+     * it, and a second operator who has not set it up should still be told.
      */
     public static function isEnabled(): bool
     {
-        return false;
+        $user = auth()->user();
+
+        return $user instanceof User && $user->hasTwoFactorEnabled();
     }
 }

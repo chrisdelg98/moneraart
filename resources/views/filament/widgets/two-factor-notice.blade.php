@@ -20,6 +20,12 @@
                     Turning it on is the single largest thing you can do for the
                     security of the store.
                 </p>
+
+                <a href="{{ \Filament\Facades\Filament::getProfileUrl() }}"
+                   class="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-warning-900 underline underline-offset-4 dark:text-warning-200">
+                    Set it up
+                    <span aria-hidden="true">&rarr;</span>
+                </a>
             </div>
         </div>
     </div>
